@@ -6,7 +6,7 @@
 @php
     $currentValue = (int) $current;
     $totalValue = (int) $total;
-    $percent = $totalValue > 0 ? (int) round(($currentValue / $totalValue) * 100) : 0;
+    $percent = $totalValue > 0 ? (int) min(100, round(($currentValue / $totalValue) * 100)) : 0;
 @endphp
 
 <div>
