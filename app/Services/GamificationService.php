@@ -39,7 +39,7 @@ class GamificationService
         ActivityLog::query()->create([
             'kid_id' => $kid->id,
             'task_id' => $task->id,
-            'action' => "{$task->title} - Completed",
+            'action' => "Completed",
         ]);
 
         $this->updateStreak($kid, $timestamp->toDateString());

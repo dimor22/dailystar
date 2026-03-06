@@ -1,8 +1,8 @@
-<x-layouts.app :title="'Manage Kids'">
+<x-layouts.app :title="'Manage Tasks'">
     <div class="mb-4 flex flex-wrap justify-between gap-3">
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('parent.dashboard') }}" class="kid-btn kid-btn-primary">Back to Dashboard</a>
-            <a href="{{ route('parent.tasks') }}" class="kid-btn kid-btn-primary">Manage Tasks</a>
+            <a href="{{ route('parent.kids') }}" class="kid-btn kid-btn-primary">Manage Kids</a>
         </div>
 
         <form action="{{ route('parent.logout') }}" method="POST">
@@ -11,5 +11,5 @@
         </form>
     </div>
 
-    <livewire:kids-manager />
+    <livewire:tasks-manager />
 </x-layouts.app>

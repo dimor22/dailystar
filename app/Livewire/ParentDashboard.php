@@ -76,7 +76,7 @@ class ParentDashboard extends Component
                 'kid' => $log->kid?->name ?? 'Unknown',
                 'task' => $log->task?->title ?? '-',
                 'action' => str_starts_with($log->action, 'completed:')
-                    ? trim(substr($log->action, strlen('completed:'))) . ' - Completed'
+                    ? 'Completed'
                     : $log->action,
                 'created_at' => optional($log->created_at)->format('M d, H:i') ?? '',
             ])

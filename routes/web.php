@@ -15,4 +15,5 @@ Route::post('/parent/logout', [ParentAuthController::class, 'logout'])->name('pa
 Route::middleware('parent.auth')->group(function () {
 	Route::view('/dashboard', 'pages.parent-dashboard')->name('parent.dashboard');
 	Route::view('/kids', 'pages.manage-kids')->name('parent.kids');
+	Route::view('/tasks', 'pages.manage-tasks')->name('parent.tasks');
 });

@@ -45,6 +45,27 @@
                     <button type="button" wire:click="cancelEdit" class="kid-btn kid-btn-warn">Cancel</button>
                 @endif
             </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-2 block text-sm font-semibold text-slate-700">Assigned Tasks</label>
+
+                @if($editingKidId)
+                    <div class="grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
+                        @forelse($availableTasks as $task)
+                            <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
+                                <input wire:model.live="assignedTaskIds" type="checkbox" value="{{ $task->id }}" class="h-4 w-4 rounded border-slate-300">
+                                <span>{{ $task->title }} ({{ $task->points }} pts)</span>
+                            </label>
+                        @empty
+                            <p class="text-sm text-slate-500">No tasks available yet. Create tasks first.</p>
+                        @endforelse
+                    </div>
+                    @error('assignedTaskIds') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('assignedTaskIds.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @else
+                    <p class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-500">Select "Edit" on a kid to manage task assignments.</p>
+                @endif
+            </div>
         </form>
     </div>
 
