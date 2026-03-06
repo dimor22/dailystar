@@ -37,5 +37,5 @@
         @endforeach
     </div>
 
-    <livewire:celebration-modal :show="$showCelebration" :key="'celebration-'.$kidId.'-'.$showCelebration" />
+    <livewire:celebration-modal :show="$showCelebration" :kidId="$kidId" :currentDate="$currentDate" :key="'celebration-'.$kidId.'-'.$currentDate.'-'.($showCelebration ? '1' : '0')" />
 </div>

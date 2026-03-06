@@ -30,6 +30,12 @@ class KidDashboard extends Component
 
     public bool $showCelebration = false;
 
+    public string $currentDate = '';
+
+    public bool $hasLoadedOnce = false;
+
+    public bool $wasAllTasksDone = false;
+
     public function mount(?int $kidId = null): void
     {
         $this->parentId = (int) session('parent_user_id');
@@ -52,6 +58,7 @@ class KidDashboard extends Component
             ->where('parent_id', $this->parentId)
             ->findOrFail($this->kidId);
         $today = now()->toDateString();
+        $this->currentDate = $today;
 
         $completedTaskIds = TaskCompletion::query()
             ->where('kid_id', $kid->id)
@@ -77,7 +84,35 @@ class KidDashboard extends Component
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);
         $this->taskCount = count($this->tasks);
         $this->completedCount = count(array_filter($this->tasks, fn (array $task) => $task['completed']));
-        $this->showCelebration = $this->taskCount > 0 && $this->completedCount === $this->taskCount;
+
+        $allTasksDone = $this->taskCount > 0 && $this->completedCount === $this->taskCount;
+        $dismissedDate = (string) session("celebration_dismissed.{$kid->id}");
+        $dismissedToday = $dismissedDate === $today;
+
+        if (! $this->hasLoadedOnce) {
+            $this->hasLoadedOnce = true;
+            $this->wasAllTasksDone = $allTasksDone;
+            $this->showCelebration = false;
+
+            return;
+        }
+
+        if ($allTasksDone && ! $this->wasAllTasksDone && ! $dismissedToday) {
+            $this->showCelebration = true;
+        }
+
+        if (! $allTasksDone) {
+            $this->showCelebration = false;
+        }
+
+        $this->wasAllTasksDone = $allTasksDone;
+    }
+
+    #[On('celebration-dismissed')]
+    public function dismissCelebration(): void
+    {
+        session()->put("celebration_dismissed.{$this->kidId}", $this->currentDate ?: now()->toDateString());
+        $this->showCelebration = false;
     }
 
     public function render()

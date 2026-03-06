@@ -28,10 +28,10 @@ class DatabaseSeeder extends Seeder
         );
 
         $kids = collect([
-            ['name' => 'Liam', 'avatar' => '🦁', 'color' => 'bg-blue-500', 'pin' => '1234'],
-            ['name' => 'Emma', 'avatar' => '🦄', 'color' => 'bg-pink-500', 'pin' => '2222'],
-            ['name' => 'Noah', 'avatar' => '🚀', 'color' => 'bg-green-500', 'pin' => '3333'],
-            ['name' => 'Ava', 'avatar' => '🌈', 'color' => 'bg-yellow-500', 'pin' => '4444'],
+            ['name' => 'Shaila', 'avatar' => '🦁', 'color' => 'bg-blue-500', 'pin' => '1111'],
+            ['name' => 'Amaira', 'avatar' => '🦄', 'color' => 'bg-pink-500', 'pin' => '1111'],
+            ['name' => 'Benjamin', 'avatar' => '🚀', 'color' => 'bg-green-500', 'pin' => '1111'],
+            ['name' => 'Evelin', 'avatar' => '🌈', 'color' => 'bg-yellow-500', 'pin' => '1111'],
         ])->map(function (array $kidData) use ($parent) {
             return Kid::query()->updateOrCreate(
                 [

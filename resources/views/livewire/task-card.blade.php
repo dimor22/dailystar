@@ -28,8 +28,10 @@
             this.showStars = true;
             setTimeout(() => this.showStars = false, 900);
 
-            if (window.Livewire) {
+            if (window.Livewire?.dispatch) {
                 window.Livewire.dispatch('task-completed');
+            } else {
+                this.$dispatch('task-completed');
             }
         }
     }"
