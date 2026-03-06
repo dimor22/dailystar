@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+	display: none !important;
+}
+
+@layer components {
+	.kid-card {
+		@apply rounded-2xl bg-white p-6 shadow-md;
+	}
+
+	.kid-btn {
+		@apply rounded-2xl px-6 py-4 text-kid-xl font-bold text-white transition hover:opacity-90;
+	}
+
+	.kid-btn-primary {
+		@apply kid-btn bg-blue-500;
+	}
+
+	.kid-btn-success {
+		@apply kid-btn bg-green-500;
+	}
+
+	.kid-btn-warn {
+		@apply kid-btn bg-orange-500;
+	}
+
+	.kid-title {
+		@apply text-kid-2xl font-extrabold text-slate-800;
+	}
+}
