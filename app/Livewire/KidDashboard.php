@@ -12,6 +12,8 @@ class KidDashboard extends Component
 {
     public int $kidId;
 
+    public int $parentId = 0;
+
     public array $tasks = [];
 
     public string $kidName = '';
@@ -30,6 +32,10 @@ class KidDashboard extends Component
 
     public function mount(?int $kidId = null): void
     {
+        $this->parentId = (int) session('parent_user_id');
+
+        abort_unless($this->parentId > 0, 403);
+
         $resolvedKidId = $kidId ?? session('kid_id');
 
         abort_unless($resolvedKidId, 403);
@@ -41,7 +47,10 @@ class KidDashboard extends Component
     #[On('task-completed')]
     public function loadDashboard(): void
     {
-        $kid = Kid::query()->with(['tasks', 'streak'])->findOrFail($this->kidId);
+        $kid = Kid::query()
+            ->with(['tasks', 'streak'])
+            ->where('parent_id', $this->parentId)
+            ->findOrFail($this->kidId);
         $today = now()->toDateString();
 
         $completedTaskIds = TaskCompletion::query()

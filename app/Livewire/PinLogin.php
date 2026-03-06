@@ -9,13 +9,22 @@ class PinLogin extends Component
 {
     public int $kidId;
 
+    public int $parentId = 0;
+
     public string $pin = '';
 
     public string $errorMessage = '';
 
+    public function mount(): void
+    {
+        $this->parentId = (int) session('parent_user_id');
+    }
+
     public function submit(): void
     {
-        $kid = Kid::query()->find($this->kidId);
+        $kid = Kid::query()
+            ->where('parent_id', $this->parentId)
+            ->find($this->kidId);
 
         if (! $kid || $kid->getRawOriginal('pin') !== $this->pin) {
             $this->errorMessage = 'That PIN is not correct. Try again!';

@@ -20,7 +20,7 @@
             </div>
         @empty
             <div class="kid-card md:col-span-2 lg:col-span-4">
-                <p class="text-kid-xl font-bold text-slate-700">No parent/kid data found yet. Run migrations and seeders.</p>
+                <a href="{{ route('parent.kids') }}" class="kid-btn kid-btn-primary inline-block">No kids found yet — Add Kids</a>
             </div>
         @endforelse
     </div>

@@ -35,5 +35,10 @@
         </form>
 
         <p class="mt-4 text-center text-slate-600">Seeded parent: parent@dailystars.app / password</p>
+
+        <p class="mt-2 text-center text-slate-600">
+            Need an account?
+            <a href="{{ route('parent.register') }}" class="font-bold text-blue-600">Create parent account</a>
+        </p>
     </div>
 </x-layouts.app>

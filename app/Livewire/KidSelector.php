@@ -12,14 +12,38 @@ class KidSelector extends Component
 
     public bool $authenticated = false;
 
+    public int $parentId = 0;
+
     public function mount(): void
     {
-        $this->selectedKidId = session('kid_id');
-        $this->authenticated = (bool) $this->selectedKidId;
+        $this->parentId = (int) session('parent_user_id');
+
+        if ($this->parentId <= 0) {
+            $this->switchKid();
+
+            return;
+        }
+
+        $sessionKidId = session('kid_id');
+
+        if ($sessionKidId && $this->ownedKids()->whereKey($sessionKidId)->exists()) {
+            $this->selectedKidId = (int) $sessionKidId;
+            $this->authenticated = true;
+
+            return;
+        }
+
+        $this->switchKid();
     }
 
     public function selectKid(int $kidId): void
     {
+        if (! $this->ownedKids()->whereKey($kidId)->exists()) {
+            $this->switchKid();
+
+            return;
+        }
+
         $this->selectedKidId = $kidId;
         $this->authenticated = false;
     }
@@ -34,14 +58,26 @@ class KidSelector extends Component
     #[On('kid-authenticated')]
     public function kidAuthenticated(int $kidId): void
     {
+        if (! $this->ownedKids()->whereKey($kidId)->exists()) {
+            $this->switchKid();
+
+            return;
+        }
+
         $this->selectedKidId = $kidId;
         $this->authenticated = true;
+    }
+
+    private function ownedKids()
+    {
+        return Kid::query()->where('parent_id', $this->parentId);
     }
 
     public function render()
     {
         return view('livewire.kid-selector', [
-            'kids' => Kid::query()->orderBy('name')->get(),
+            'parentMissing' => $this->parentId <= 0,
+            'kids' => $this->ownedKids()->orderBy('name')->get(),
         ]);
     }
 }

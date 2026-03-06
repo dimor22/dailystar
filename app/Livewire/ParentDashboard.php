@@ -15,14 +15,20 @@ class ParentDashboard extends Component
 
     public array $activityLogs = [];
 
+    public int $parentId = 0;
+
     public function mount(): void
     {
+        $this->parentId = (int) session('parent_user_id');
         $this->loadDashboard();
     }
 
     public function loadDashboard(): void
     {
-        $parent = User::query()->where('role', 'parent')->first();
+        $parent = User::query()
+            ->where('role', 'parent')
+            ->whereKey($this->parentId)
+            ->first();
 
         if (! $parent) {
             $this->kids = [];
@@ -62,13 +68,16 @@ class ParentDashboard extends Component
 
         $this->activityLogs = ActivityLog::query()
             ->with(['kid', 'task'])
+            ->whereHas('kid', fn ($query) => $query->where('parent_id', $parent->id))
             ->latest('created_at')
             ->limit(20)
             ->get()
             ->map(fn (ActivityLog $log) => [
                 'kid' => $log->kid?->name ?? 'Unknown',
                 'task' => $log->task?->title ?? '-',
-                'action' => $log->action,
+                'action' => str_starts_with($log->action, 'completed:')
+                    ? trim(substr($log->action, strlen('completed:'))) . ' - Completed'
+                    : $log->action,
                 'created_at' => optional($log->created_at)->format('M d, H:i') ?? '',
             ])
             ->all();
