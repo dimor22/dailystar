@@ -33,6 +33,7 @@ class PinLogin extends Component
         }
 
         session(['kid_id' => $kid->id]);
+        session()->forget('preselected_kid_id');
         $this->reset('pin', 'errorMessage');
 
         $this->dispatch('kid-authenticated', kidId: $kid->id);

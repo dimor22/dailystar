@@ -1,4 +1,14 @@
 <div class="space-y-6">
+    @php
+        $selectedKid = $kids->firstWhere('id', $selectedKidId);
+    @endphp
+
+    <div class="text-center">
+        <div class="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-white text-5xl shadow">
+            {{ $selectedKid?->avatar ?? '🌟' }}
+        </div>
+    </div>
+
     @if($parentMissing)
         <div class="kid-card text-center">
             <h1 class="kid-title">Parent Sign-in Required</h1>
@@ -8,7 +18,7 @@
     @elseif($authenticated && $selectedKidId)
         <div class="flex items-center justify-between">
             <h1 class="kid-title">Today's Missions</h1>
-            <button class="kid-btn kid-btn-warn" wire:click="switchKid">Switch Kid</button>
+
         </div>
 
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />

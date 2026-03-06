@@ -25,10 +25,18 @@ class KidSelector extends Component
         }
 
         $sessionKidId = session('kid_id');
+        $preselectedKidId = session('preselected_kid_id');
 
         if ($sessionKidId && $this->ownedKids()->whereKey($sessionKidId)->exists()) {
             $this->selectedKidId = (int) $sessionKidId;
             $this->authenticated = true;
+
+            return;
+        }
+
+        if ($preselectedKidId && $this->ownedKids()->whereKey($preselectedKidId)->exists()) {
+            $this->selectedKidId = (int) $preselectedKidId;
+            $this->authenticated = false;
 
             return;
         }
@@ -46,11 +54,12 @@ class KidSelector extends Component
 
         $this->selectedKidId = $kidId;
         $this->authenticated = false;
+        session()->forget('preselected_kid_id');
     }
 
     public function switchKid(): void
     {
-        session()->forget('kid_id');
+        session()->forget(['kid_id', 'preselected_kid_id']);
         $this->authenticated = false;
         $this->selectedKidId = null;
     }
@@ -66,6 +75,7 @@ class KidSelector extends Component
 
         $this->selectedKidId = $kidId;
         $this->authenticated = true;
+        session()->forget('preselected_kid_id');
     }
 
     private function ownedKids()

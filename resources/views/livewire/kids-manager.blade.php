@@ -81,6 +81,20 @@
                     </div>
                     <p class="mt-3 text-sm text-slate-600">Points: {{ $kid->points }}</p>
 
+                    <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Share Link</p>
+                        <a href="{{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}" class="mt-1 block truncate text-sm font-semibold text-blue-600">
+                            {{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}
+                        </a>
+                        <button
+                            type="button"
+                            class="mt-2 rounded-lg bg-slate-800 px-2 py-1 text-xs font-bold text-white"
+                            onclick="navigator.clipboard.writeText('{{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}')"
+                        >
+                            Copy Link
+                        </button>
+                    </div>
+
                     <div class="mt-3 flex gap-2">
                         <button type="button" wire:click.prevent="editKid({{ $kid->id }})" class="rounded-xl bg-blue-500 px-3 py-2 text-sm font-bold text-white">Edit</button>
                         <button type="button" wire:click.prevent="deleteKid({{ $kid->id }})" wire:confirm="Delete {{ $kid->name }}?" class="rounded-xl bg-red-500 px-3 py-2 text-sm font-bold text-white">Delete</button>
