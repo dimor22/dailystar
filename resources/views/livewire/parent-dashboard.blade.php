@@ -15,7 +15,7 @@
                 <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
                 <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
                 <div class="mt-3">
-                    <livewire:progress-bar :current="$kid['completed']" :total="$kid['total']" :key="'parent-progress-'.$kid['id'].'-'.$kid['completed']" />
+                    <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />
                 </div>
             </div>
         @empty

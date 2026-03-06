@@ -20,7 +20,7 @@
             <p class="text-kid-xl font-bold text-slate-700">Daily Progress</p>
             <p class="text-kid-xl font-bold text-slate-700">{{ $completedCount }}/{{ $taskCount }}</p>
         </div>
-        <livewire:progress-bar :current="$completedCount" :total="$taskCount" :key="'progress-'.$kidId.'-'.$completedCount" />
+        <x-progress-bar :current="$completedCount" :total="$taskCount" />
     </div>
 
     <div class="grid gap-4 md:grid-cols-2">

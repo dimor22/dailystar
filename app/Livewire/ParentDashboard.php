@@ -43,7 +43,7 @@ class ParentDashboard extends Component
                 $totalTasks = $kid->tasks->count();
                 $completedTasks = TaskCompletion::query()
                     ->where('kid_id', $kid->id)
-                    ->where('completed_date', $today)
+                    ->whereDate('completed_date', $today)
                     ->count();
 
                 return [

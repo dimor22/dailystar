@@ -20,7 +20,7 @@ class GamificationService
         $alreadyCompleted = TaskCompletion::query()
             ->where('kid_id', $kid->id)
             ->where('task_id', $task->id)
-            ->where('completed_date', $completedDate)
+            ->whereDate('completed_date', $completedDate)
             ->exists();
 
         if ($alreadyCompleted) {

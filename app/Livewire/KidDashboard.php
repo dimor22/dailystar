@@ -46,7 +46,7 @@ class KidDashboard extends Component
 
         $completedTaskIds = TaskCompletion::query()
             ->where('kid_id', $kid->id)
-            ->where('completed_date', $today)
+            ->whereDate('completed_date', $today)
             ->pluck('task_id')
             ->all();
 
