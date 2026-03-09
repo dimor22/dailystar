@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="{{ asset('daily-favicon.png') }}">
 
-        <title>DailyStar</title>
+        <title>DailyStars</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
