@@ -1,5 +1,6 @@
-<div class="space-y-6">
-    <div class="kid-card">
+<div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+    <div class="kid-card h-fit lg:sticky lg:top-6">
         <h1 class="kid-title">Manage Kids</h1>
         <p class="mt-1 text-slate-600">Add, edit, or remove kid profiles.</p>
 
@@ -69,10 +70,10 @@
         </form>
     </div>
 
-    <div class="kid-card">
+    <div class="kid-card !m-0">
         <h2 class="text-kid-xl font-bold text-slate-800">Current Kids</h2>
 
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-4 grid gap-4 grid-cols-1">
             @forelse($kids as $kid)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     <div class="rounded-2xl p-4 text-center text-white {{ $kid->color }}">

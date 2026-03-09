@@ -5,9 +5,10 @@ use App\Http\Controllers\ParentAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
+
 Route::get('/k/{shareCode}', KidSharedLinkController::class)->name('kid.shared-login');
 
-Route::view('/login', 'pages.kid-login')->name('kid.login');
+Route::view('/students', 'pages.kid-login')->name('kid.login');
 
 Route::get('/parent/login', [ParentAuthController::class, 'showLogin'])->name('parent.login');
 Route::view('/parent/register', 'pages.parent-register')->name('parent.register');

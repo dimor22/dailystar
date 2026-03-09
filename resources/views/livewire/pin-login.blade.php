@@ -1,6 +1,6 @@
 <div class="mx-auto max-w-md kid-card text-center" x-data x-init="$nextTick(() => $refs.pinInput?.focus())">
     <form wire:submit="submit" class="space-y-4">
-        <label class="block text-kid-xl font-bold text-slate-700">4-digit PIN</label>
+        <label class="block text-kid-xl font-bold text-slate-700">Enter your 4-digit PIN</label>
         <input
             x-ref="pinInput"
             type="password"

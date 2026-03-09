@@ -1,7 +1,7 @@
 <div class="space-y-6" wire:poll.30s="loadDashboard">
     <div class="flex items-center justify-between">
         <h1 class="kid-title">Parent Dashboard</h1>
-        <a href="/login" class="kid-btn kid-btn-primary">Kid Login</a>
+
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -19,7 +19,7 @@
                 </div>
             </div>
         @empty
-            <div class="kid-card md:col-span-2 lg:col-span-4">
+            <div class="kid-card md:col-span-2 lg:col-span-4 w-full text-center">
                 <a href="{{ route('parent.kids') }}" class="kid-btn kid-btn-primary inline-block">No kids found yet — Add Kids</a>
             </div>
         @endforelse

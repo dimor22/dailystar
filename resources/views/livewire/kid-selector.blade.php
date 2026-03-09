@@ -3,12 +3,16 @@
         $selectedKid = $kids->firstWhere('id', $selectedKidId);
     @endphp
 
-    <div class="text-center">
-        <div class="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-white text-5xl shadow">
-            {{ $selectedKid?->avatar ?? '🌟' }}
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-center">
+            <x-site-logo class="w-64" />
+        </div>
+
+        {{-- Show a button for parents to go back to the parent area --}}
+        <div class="text-center mb-4">
+            <a href="{{ route('parent.dashboard') }}" class="kid-btn kid-btn-primary inline-block">Back to Parent Dashboard</a>
         </div>
     </div>
-
     @if($parentMissing)
         <div class="kid-card text-center">
             <h1 class="kid-title">Parent Sign-in Required</h1>
@@ -23,7 +27,10 @@
 
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />
     @elseif($selectedKidId)
-        <h1 class="kid-title text-center">Enter Your PIN</h1>
+        <div class="flex gap-4 justify-center items-center mb-6">
+            <span class="text-6xl bg-white rounded-full p-4 flex justify-center items-center h-30 w-30">{{ $selectedKid->avatar }}</span>
+            <h1 class="kid-title text-center text-6xl">{{ $selectedKid->name }}</h1>
+        </div>
         <livewire:pin-login :kidId="$selectedKidId" :key="'pin-login-'.$selectedKidId" />
     @elseif($kids->isNotEmpty())
         <h1 class="kid-title text-center">Choose Your Avatar</h1>

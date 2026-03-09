@@ -1,14 +1,19 @@
 <x-layouts.app :title="'Manage Kids'">
-    <div class="mb-4 flex flex-wrap justify-between gap-3">
-        <div class="flex flex-wrap gap-3">
-            <a href="{{ route('parent.dashboard') }}" class="kid-btn kid-btn-primary">Back to Dashboard</a>
-            <a href="{{ route('parent.tasks') }}" class="kid-btn kid-btn-primary">Manage Tasks</a>
+    <div class="mb-10 flex justify-between gap-3">
+        <div class="flex items-center justify-center shrink-0">
+            <x-site-logo class="w-64" />
         </div>
 
-        <form action="{{ route('parent.logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="kid-btn kid-btn-warn">Parent Logout</button>
-        </form>
+        <div class="flex flex-wrap items-center justify-end gap-3">
+            <a href="{{ route('parent.dashboard') }}" class="kid-btn kid-btn-primary">Back to Dashboard</a>
+            <a href="{{ route('parent.tasks') }}" class="kid-btn kid-btn-primary">Manage Tasks</a>
+            <form action="{{ route('parent.logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="kid-btn kid-btn-warn">Logout</button>
+            </form>
+        </div>
+
+
     </div>
 
     <livewire:kids-manager />
