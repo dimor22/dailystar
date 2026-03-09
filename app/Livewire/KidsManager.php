@@ -112,7 +112,7 @@ class KidsManager extends Component
 
         return view('livewire.kids-manager', [
             'kids' => $this->ownedKids()->orderBy('name')->get(),
-            'avatarOptions' => ['🦁', '🦄', '🚀', '🌈', '🐯', '🐼', '🦊', '🐙'],
+            'avatarOptions' => ['🦁', '🦄', '🚀', '🌈', '🐯', '🐼', '🦊', '🐙','🌹','🏎️'],
             'colorOptions' => $colorOptions,
             'availableTasks' => $availableTasks,
         ]);
