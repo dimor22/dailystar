@@ -17,6 +17,8 @@ class ParentDashboard extends Component
 
     public int $parentId = 0;
 
+    public string $parentEmail = '';
+
     public function mount(): void
     {
         $this->parentId = (int) session('parent_user_id');
@@ -33,9 +35,12 @@ class ParentDashboard extends Component
         if (! $parent) {
             $this->kids = [];
             $this->activityLogs = [];
+            $this->parentEmail = '';
 
             return;
         }
+
+        $this->parentEmail = (string) $parent->email;
 
         $today = now()->toDateString();
         $gamificationService = app(GamificationService::class);

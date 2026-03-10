@@ -7,11 +7,6 @@
         <div class="flex items-center justify-center">
             <x-site-logo class="w-64" />
         </div>
-
-        {{-- Show a button for parents to go back to the parent area --}}
-        <div class="text-center mb-4">
-            <a href="{{ route('parent.dashboard') }}" class="kid-btn kid-btn-primary inline-block">Back to Parent Dashboard</a>
-        </div>
     </div>
     @if($parentMissing)
         <div class="kid-card text-center">

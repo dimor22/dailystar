@@ -1,7 +1,10 @@
 <div class="space-y-6" wire:poll.30s="loadDashboard">
     <div class="flex items-center justify-between">
         <h1 class="kid-title">Parent Dashboard</h1>
-
+        {{-- Parent's email --}}
+        <div class="flex items-center gap-4">
+            <span class="text-slate-700">{{ $parentEmail }}</span>
+        </div>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
