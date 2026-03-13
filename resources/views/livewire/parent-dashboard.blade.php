@@ -1,6 +1,9 @@
 <div class="space-y-6" wire:poll.30s="loadDashboard">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between">
-        <h1 class="kid-title">Parent Dashboard</h1>
+        <div>
+            <h1 class="kid-title">Parent Dashboard</h1>
+            <p class="text-sm text-slate-500">{{ $dashboardDateTime }}</p>
+        </div>
         {{-- Parent's email --}}
         <div class="flex items-center gap-4">
             <div class="sm:text-right">

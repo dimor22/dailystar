@@ -25,6 +25,8 @@ class ParentDashboard extends Component
 
     public string $timezone = '';
 
+    public string $dashboardDateTime = '';
+
     public function mount(): void
     {
         $this->parentId = (int) session('parent_user_id');
@@ -33,6 +35,8 @@ class ParentDashboard extends Component
 
     public function loadDashboard(): void
     {
+        $this->dashboardDateTime = now()->format('l, F j • h:i A');
+
         $parent = User::query()
             ->where('role', 'parent')
             ->whereKey($this->parentId)
