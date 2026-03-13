@@ -3,8 +3,35 @@
         <h1 class="kid-title">Parent Dashboard</h1>
         {{-- Parent's email --}}
         <div class="flex items-center gap-4">
-            <span class="text-slate-700">{{ $parentEmail }}</span>
+            <div class="text-right">
+                <p class="text-slate-700">{{ $parentEmail }}</p>
+                <p class="text-sm text-slate-500">Timezone: {{ $parentTimezone }}</p>
+            </div>
+            <form action="{{ route('parent.logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="kid-btn kid-btn-warn">Logout</button>
+            </form>
         </div>
+    </div>
+
+    <div class="kid-card">
+        <h2 class="text-kid-xl font-bold text-slate-800">Account Settings</h2>
+        <form wire:submit="updateTimezone" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="w-full">
+                <label class="mb-1 block text-sm font-semibold text-slate-700">Timezone</label>
+                <select wire:model.live="timezone" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                    @foreach($timezones as $tz)
+                        <option value="{{ $tz }}">{{ $tz }}</option>
+                    @endforeach
+                </select>
+                @error('timezone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+            <button type="submit" class="kid-btn kid-btn-primary">Save Timezone</button>
+        </form>
+
+        @if (session()->has('timezone_success'))
+            <p class="mt-3 text-sm font-semibold text-green-600">{{ session('timezone_success') }}</p>
+        @endif
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

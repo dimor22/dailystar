@@ -7,6 +7,7 @@ use App\Models\Kid;
 use App\Models\TaskCompletion;
 use App\Models\User;
 use App\Services\GamificationService;
+use DateTimeZone;
 use Livewire\Component;
 
 class ParentDashboard extends Component
@@ -18,6 +19,10 @@ class ParentDashboard extends Component
     public int $parentId = 0;
 
     public string $parentEmail = '';
+
+    public string $parentTimezone = '';
+
+    public string $timezone = '';
 
     public function mount(): void
     {
@@ -36,11 +41,17 @@ class ParentDashboard extends Component
             $this->kids = [];
             $this->activityLogs = [];
             $this->parentEmail = '';
+            $this->parentTimezone = '';
 
             return;
         }
 
         $this->parentEmail = (string) $parent->email;
+        $this->parentTimezone = (string) ($parent->timezone ?: config('app.timezone'));
+
+        if ($this->timezone === '') {
+            $this->timezone = $this->parentTimezone;
+        }
 
         $today = now()->toDateString();
         $gamificationService = app(GamificationService::class);
@@ -88,8 +99,36 @@ class ParentDashboard extends Component
             ->all();
     }
 
+    public function updateTimezone(): void
+    {
+        $validated = $this->validate([
+            'timezone' => ['required', 'timezone'],
+        ]);
+
+        $parent = User::query()
+            ->where('role', 'parent')
+            ->whereKey($this->parentId)
+            ->first();
+
+        abort_unless($parent, 403);
+
+        $parent->timezone = $validated['timezone'];
+        $parent->save();
+
+        session(['parent_timezone' => $parent->timezone]);
+        config(['app.timezone' => $parent->timezone]);
+        date_default_timezone_set($parent->timezone);
+
+        $this->parentTimezone = (string) $parent->timezone;
+        $this->timezone = (string) $parent->timezone;
+
+        session()->flash('timezone_success', 'Timezone updated successfully.');
+    }
+
     public function render()
     {
-        return view('livewire.parent-dashboard');
+        return view('livewire.parent-dashboard', [
+            'timezones' => DateTimeZone::listIdentifiers(),
+        ]);
     }
 }

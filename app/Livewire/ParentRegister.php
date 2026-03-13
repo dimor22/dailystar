@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use DateTimeZone;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
@@ -12,7 +13,7 @@ class ParentRegister extends Component
 
     public string $email = '';
 
-    public string $timezone = 'America/New_York';
+    public string $timezone = 'UTC';
 
     public string $password = '';
 
@@ -37,6 +38,7 @@ class ParentRegister extends Component
         ]);
 
         session(['parent_user_id' => $parent->id]);
+        session(['parent_timezone' => $parent->timezone]);
 
         $this->redirectRoute('parent.dashboard', navigate: true);
     }
@@ -44,13 +46,7 @@ class ParentRegister extends Component
     public function render()
     {
         return view('livewire.parent-register', [
-            'timezones' => [
-                'America/New_York',
-                'America/Chicago',
-                'America/Denver',
-                'America/Los_Angeles',
-                'UTC',
-            ],
+            'timezones' => DateTimeZone::listIdentifiers(),
         ]);
     }
 }

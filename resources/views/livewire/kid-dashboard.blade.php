@@ -3,6 +3,7 @@
         <div class="kid-card">
             <p class="text-lg font-semibold text-slate-600">Kid</p>
             <p class="kid-title">{{ $kidName }}</p>
+            <p class="text-sm text-slate-500">Timezone: {{ config('app.timezone') }}</p>
         </div>
         <div class="kid-card">
             <p class="text-lg font-semibold text-slate-600">Points</p>

@@ -38,6 +38,7 @@ class ParentAuthController extends Controller
         }
 
         $request->session()->put('parent_user_id', $parent->id);
+        $request->session()->put('parent_timezone', $parent->timezone);
 
         return redirect()->route('parent.dashboard');
     }
@@ -45,6 +46,7 @@ class ParentAuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         $request->session()->forget('parent_user_id');
+        $request->session()->forget('parent_timezone');
 
         return redirect()->route('parent.login');
     }
