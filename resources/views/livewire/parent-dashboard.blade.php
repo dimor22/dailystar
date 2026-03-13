@@ -1,16 +1,12 @@
 <div class="space-y-6" wire:poll.30s="loadDashboard">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between">
         <h1 class="kid-title">Parent Dashboard</h1>
         {{-- Parent's email --}}
         <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p class="text-slate-700">{{ $parentEmail }}</p>
-                <p class="text-sm text-slate-500">Timezone: {{ $parentTimezone }}</p>
+            <div class="sm:text-right">
+                <p class="text-slate-500">{{ $parentEmail }}</p>
+                <p class="text-sm text-slate-400">Timezone: {{ $parentTimezone }}</p>
             </div>
-            <form action="{{ route('parent.logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="kid-btn kid-btn-warn">Logout</button>
-            </form>
         </div>
     </div>
 

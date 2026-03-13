@@ -22,7 +22,17 @@ class TaskCompletionController extends Controller
         $kid = Kid::query()->with('parent')->findOrFail($validated['kid_id']);
         $task = Task::query()->findOrFail($validated['task_id']);
 
-        $completed = $gamificationService->completeTask($kid, $task);
+        $parentTimezone = (string) ($kid->parent?->timezone ?: config('app.timezone'));
+
+        if (! in_array($parentTimezone, timezone_identifiers_list(), true)) {
+            $parentTimezone = (string) config('app.timezone');
+        }
+
+        $completed = $gamificationService->completeTask(
+            $kid,
+            $task,
+            now()->setTimezone($parentTimezone)
+        );
 
         if ($completed && $kid->parent) {
             $emailService->sendTaskCompletedNotification($kid->parent, $kid, $task);
