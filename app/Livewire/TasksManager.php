@@ -10,6 +10,14 @@ use Livewire\Component;
 
 class TasksManager extends Component
 {
+    private const DEFAULT_WEEK_DAYS = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+    ];
+
     public int $parentId = 0;
 
     public string $formTitle = '';
@@ -57,6 +65,7 @@ class TasksManager extends Component
                     'task_id' => $task->id,
                     'order' => $nextOrder,
                     'active' => true,
+                    'days_of_week' => self::DEFAULT_WEEK_DAYS,
                     'created_at' => now(),
                 ]);
             }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kid;
+use App\Models\KidTask;
 use App\Models\Task;
 use App\Services\EmailService;
 use App\Services\GamificationService;
@@ -28,10 +29,38 @@ class TaskCompletionController extends Controller
             $parentTimezone = (string) config('app.timezone');
         }
 
+        $timestamp = now()->setTimezone($parentTimezone);
+        $todayWeekday = strtolower($timestamp->format('l'));
+
+        $kidTask = KidTask::query()
+            ->where('kid_id', $kid->id)
+            ->where('task_id', $task->id)
+            ->where('active', true)
+            ->first();
+
+        if (! $kidTask) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task is not assigned to this kid.',
+            ], 422);
+        }
+
+        $daysOfWeek = collect((array) ($kidTask->days_of_week ?? []))
+            ->map(fn ($day) => strtolower((string) $day))
+            ->values()
+            ->all();
+
+        if (! empty($daysOfWeek) && ! in_array($todayWeekday, $daysOfWeek, true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task is not scheduled for today.',
+            ], 422);
+        }
+
         $completed = $gamificationService->completeTask(
             $kid,
             $task,
-            now()->setTimezone($parentTimezone)
+            $timestamp
         );
 
         if ($completed && $kid->parent) {

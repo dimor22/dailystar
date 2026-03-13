@@ -24,6 +24,6 @@ class Task extends Model
     public function kids()
     {
         return $this->belongsToMany(Kid::class, 'kid_tasks')
-            ->withPivot(['id', 'order', 'active', 'created_at']);
+            ->withPivot(['id', 'order', 'active', 'days_of_week', 'created_at']);
     }
 }

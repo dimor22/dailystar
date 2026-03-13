@@ -16,11 +16,13 @@ class KidTask extends Model
         'task_id',
         'order',
         'active',
+        'days_of_week',
         'created_at',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'days_of_week' => 'array',
         'created_at' => 'datetime',
     ];
 

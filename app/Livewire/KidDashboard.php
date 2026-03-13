@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Kid;
+use App\Models\KidTask;
 use App\Models\TaskCompletion;
 use App\Services\GamificationService;
 use Livewire\Attributes\On;
@@ -58,15 +59,31 @@ class KidDashboard extends Component
             ->where('parent_id', $this->parentId)
             ->findOrFail($this->kidId);
         $today = now()->toDateString();
+        $todayWeekday = strtolower(now()->format('l'));
         $this->currentDate = $today;
+
+        $visibleTaskIds = KidTask::query()
+            ->where('kid_id', $kid->id)
+            ->where('active', true)
+            ->where(function ($query) use ($todayWeekday) {
+                $query
+                    ->whereNull('days_of_week')
+                    ->orWhereJsonLength('days_of_week', 0)
+                    ->orWhereJsonContains('days_of_week', $todayWeekday);
+            })
+            ->pluck('task_id')
+            ->map(fn ($taskId) => (int) $taskId)
+            ->all();
 
         $completedTaskIds = TaskCompletion::query()
             ->where('kid_id', $kid->id)
             ->whereDate('completed_date', $today)
+            ->whereIn('task_id', $visibleTaskIds)
             ->pluck('task_id')
             ->all();
 
         $this->tasks = $kid->tasks
+            ->filter(fn ($task) => in_array((int) $task->id, $visibleTaskIds, true))
             ->map(function ($task) use ($completedTaskIds) {
                 return [
                     'id' => $task->id,

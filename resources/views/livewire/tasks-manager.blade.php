@@ -2,6 +2,7 @@
     <div class="kid-card h-fit lg:sticky lg:top-6">
         <h1 class="kid-title">Manage Tasks</h1>
         <p class="mt-1 text-slate-600">Create and update tasks for your kids.</p>
+        <p class="mt-1 text-xs text-slate-500">New tasks are assigned to each kid for Mon-Fri by default. You can adjust days in Manage Kids.</p>
 
         <form wire:submit="{{ $editingTaskId ? 'updateTask' : 'createTask' }}" class="mt-6 grid gap-4 md:grid-cols-2" autocomplete="off">
             <div>

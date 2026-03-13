@@ -50,7 +50,7 @@ class Kid extends Model
     public function tasks()
     {
         return $this->belongsToMany(Task::class, 'kid_tasks')
-            ->withPivot(['id', 'order', 'active', 'created_at'])
+            ->withPivot(['id', 'order', 'active', 'days_of_week', 'created_at'])
             ->wherePivot('active', true)
             ->orderBy('kid_tasks.order');
     }

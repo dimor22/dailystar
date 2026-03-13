@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\ActivityLog;
 use App\Models\Kid;
+use App\Models\KidTask;
 use App\Models\TaskCompletion;
 use App\Models\User;
 use App\Services\GamificationService;
@@ -54,6 +55,7 @@ class ParentDashboard extends Component
         }
 
         $today = now()->toDateString();
+        $todayWeekday = strtolower(now()->format('l'));
         $gamificationService = app(GamificationService::class);
 
         $this->kids = Kid::query()
@@ -61,11 +63,24 @@ class ParentDashboard extends Component
             ->where('parent_id', $parent->id)
             ->orderBy('name')
             ->get()
-            ->map(function (Kid $kid) use ($today, $gamificationService) {
-                $totalTasks = $kid->tasks->count();
+            ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService) {
+                $visibleTaskIds = KidTask::query()
+                    ->where('kid_id', $kid->id)
+                    ->where('active', true)
+                    ->where(function ($query) use ($todayWeekday) {
+                        $query
+                            ->whereNull('days_of_week')
+                            ->orWhereJsonLength('days_of_week', 0)
+                            ->orWhereJsonContains('days_of_week', $todayWeekday);
+                    })
+                    ->pluck('task_id')
+                    ->all();
+
+                $totalTasks = count($visibleTaskIds);
                 $completedTasks = TaskCompletion::query()
                     ->where('kid_id', $kid->id)
                     ->whereDate('completed_date', $today)
+                    ->whereIn('task_id', $visibleTaskIds)
                     ->count();
 
                 return [
