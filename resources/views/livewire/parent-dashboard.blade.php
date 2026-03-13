@@ -1,4 +1,4 @@
-<div class="space-y-6" wire:poll.30s="loadDashboard">
+<div class="space-y-6" wire:poll.30s="loadDashboard" x-data="{ settingsOpen: false }">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between">
         <div>
             <h1 class="kid-title">Parent Dashboard</h1>
@@ -8,29 +8,47 @@
         <div class="flex items-center gap-4">
             <div class="sm:text-right">
                 <p class="text-slate-500">{{ $parentEmail }}</p>
-                <p class="text-sm text-slate-400">Timezone: {{ $parentTimezone }}</p>
+                <button
+                    type="button"
+                    class="text-sm text-slate-400 hover:text-slate-600"
+                    @click="settingsOpen = true"
+                >
+                    Timezone: {{ $parentTimezone }}
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="kid-card">
-        <h2 class="text-kid-xl font-bold text-slate-800">Account Settings</h2>
-        <form wire:submit="updateTimezone" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div class="w-full">
-                <label class="mb-1 block text-sm font-semibold text-slate-700">Timezone</label>
-                <select wire:model.live="timezone" class="w-full rounded-xl border border-slate-300 px-3 py-2">
-                    @foreach($timezones as $tz)
-                        <option value="{{ $tz }}">{{ $tz }}</option>
-                    @endforeach
-                </select>
-                @error('timezone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    <div
+        x-show="settingsOpen"
+        x-cloak
+        class="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4"
+        @keydown.escape.window="settingsOpen = false"
+        @click.self="settingsOpen = false"
+    >
+        <div class="kid-card w-full max-w-xl">
+            <div class="flex items-center justify-between">
+                <h2 class="text-kid-xl font-bold text-slate-800">Account Settings</h2>
+                <button type="button" class="text-sm font-semibold text-slate-500 hover:text-slate-700" @click="settingsOpen = false">Close</button>
             </div>
-            <button type="submit" class="kid-btn kid-btn-primary">Save Timezone</button>
-        </form>
 
-        @if (session()->has('timezone_success'))
-            <p class="mt-3 text-sm font-semibold text-green-600">{{ session('timezone_success') }}</p>
-        @endif
+            <form wire:submit="updateTimezone" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="w-full">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700">Timezone</label>
+                    <select wire:model.live="timezone" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                        @foreach($timezones as $tz)
+                            <option value="{{ $tz }}">{{ $tz }}</option>
+                        @endforeach
+                    </select>
+                    @error('timezone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <button type="submit" class="kid-btn kid-btn-primary">Save Timezone</button>
+            </form>
+
+            @if (session()->has('timezone_success'))
+                <p class="mt-3 text-sm font-semibold text-green-600">{{ session('timezone_success') }}</p>
+            @endif
+        </div>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
