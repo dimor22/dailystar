@@ -73,6 +73,7 @@ class KidsManager extends Component
         ]);
 
         $this->resetForm();
+        $this->dispatch('toast', message: 'Kid added.', type: 'success');
     }
 
     public function editKid(int $kidId): void
@@ -143,6 +144,7 @@ class KidsManager extends Component
         $this->syncKidTasks($kid, $taskIds, $taskDays);
 
         $this->resetForm();
+        $this->dispatch('toast', message: 'Kid updated.', type: 'success');
     }
 
     public function updatedAssignedTaskIds(): void
@@ -245,11 +247,15 @@ class KidsManager extends Component
 
     public function deleteKid(int $kidId): void
     {
+        $kid = $this->ownedKids()->findOrFail($kidId);
+
         $this->ownedKids()->whereKey($kidId)->delete();
 
         if ($this->editingKidId === $kidId) {
             $this->resetForm();
         }
+
+        $this->dispatch('toast', message: "{$kid->name} deleted.", type: 'success');
     }
 
     public function cancelEdit(): void

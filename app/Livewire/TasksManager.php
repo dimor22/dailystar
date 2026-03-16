@@ -72,6 +72,7 @@ class TasksManager extends Component
         });
 
         $this->resetForm();
+        $this->dispatch('toast', message: 'Task added.', type: 'success');
     }
 
     public function editTask(int $taskId): void
@@ -109,6 +110,7 @@ class TasksManager extends Component
             ->update(['active' => (bool) $validated['formActive']]);
 
         $this->resetForm();
+        $this->dispatch('toast', message: 'Task updated.', type: 'success');
     }
 
     public function deleteTask(int $taskId): void
@@ -127,6 +129,8 @@ class TasksManager extends Component
         if ($this->editingTaskId === $taskId) {
             $this->resetForm();
         }
+
+        $this->dispatch('toast', message: 'Task deleted.', type: 'success');
     }
 
     public function cancelEdit(): void

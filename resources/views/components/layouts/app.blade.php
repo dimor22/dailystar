@@ -43,7 +43,7 @@
     }"
     x-on:toast.window="showToast($event.detail)"
 >
-    <main class="mx-auto max-w-6xl p-6">
+    <main class="mx-auto 2xl:max-w-[80vw] p-6">
         {{ $slot }}
     </main>
 

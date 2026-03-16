@@ -109,7 +109,7 @@
     <div class="kid-card !m-0">
         <h2 class="text-kid-xl font-bold text-slate-800">Current Kids</h2>
 
-        <div class="mt-4 grid gap-4 grid-cols-1">
+        <div class="mt-4 grid gap-4 grid-cols-1 2xl:grid-cols-2">
             @forelse($kids as $kid)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     <div class="rounded-2xl p-4 text-center text-white {{ $kid->color }}">

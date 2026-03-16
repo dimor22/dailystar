@@ -53,7 +53,7 @@
     <div class="kid-card !m-0">
         <h2 class="text-kid-xl font-bold text-slate-800">Current Tasks</h2>
 
-        <div class="mt-4 grid gap-4 grid-cols-1">
+        <div class="mt-4 grid gap-4 grid-cols-1 2xl:grid-cols-2">
             @forelse($tasks as $task)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     <div class="flex items-start justify-between gap-3">
