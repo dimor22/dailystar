@@ -90,7 +90,7 @@
                             <td class="py-2">{{ $log['kid'] }}</td>
                             <td class="py-2">{{ $log['task'] }}</td>
                             <td class="py-2">{{ $log['action'] }}</td>
-                            <td class="py-2">{{ $log['created_at'] }}</td>
+                            <td class="py-2">{{ $log['completed_at'] }}</td>
                         </tr>
                     @empty
                         <tr>

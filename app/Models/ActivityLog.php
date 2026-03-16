@@ -15,10 +15,12 @@ class ActivityLog extends Model
         'kid_id',
         'task_id',
         'action',
+        'completed_at',
         'created_at',
     ];
 
     protected $casts = [
+        'completed_at' => 'datetime',
         'created_at' => 'datetime',
     ];
 

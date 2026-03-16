@@ -40,6 +40,7 @@ class GamificationService
             'kid_id' => $kid->id,
             'task_id' => $task->id,
             'action' => "Completed",
+            'completed_at' => $timestamp,
         ]);
 
         $this->updateStreak($kid, $timestamp->toDateString());

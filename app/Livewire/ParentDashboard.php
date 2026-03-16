@@ -113,7 +113,7 @@ class ParentDashboard extends Component
                 'action' => str_starts_with($log->action, 'completed:')
                     ? 'Completed'
                     : $log->action,
-                'created_at' => optional($log->created_at)->format('M d, H:i') ?? '',
+                'completed_at' => optional($log->completed_at ?? $log->created_at)->format('M d, h:i A') ?? '',
             ])
             ->all();
     }
