@@ -18,15 +18,21 @@
                 body: JSON.stringify({ kid_id: @js($kidId), task_id: @js($taskId) }),
             });
 
+            this.openConfirm = false;
+
             if (!response.ok) {
-                this.openConfirm = false;
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: {
+                        message: 'Unable to complete task.',
+                        type: 'error',
+                    },
+                }));
                 return;
             }
 
             this.isDone = true;
-            this.openConfirm = false;
             this.showStars = true;
-            setTimeout(() => this.showStars = false, 900);
+            setTimeout(() => this.showStars = false, 1900);
 
             if (window.Livewire?.dispatch) {
                 window.Livewire.dispatch('task-completed');

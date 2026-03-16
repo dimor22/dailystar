@@ -133,13 +133,13 @@
 
                     <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Share Link</p>
-                        <a href="{{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}" class="mt-1 block truncate text-sm font-semibold text-blue-600">
-                            {{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}
+                        <a href="{{ route('kid.shared-login', ['publicId' => $kid->public_id]) }}" class="mt-1 block truncate text-sm font-semibold text-blue-600">
+                            {{ route('kid.shared-login', ['publicId' => $kid->public_id]) }}
                         </a>
                         <button
                             type="button"
                             class="mt-2 rounded-lg bg-slate-800 px-2 py-1 text-xs font-bold text-white"
-                            onclick="navigator.clipboard.writeText('{{ route('kid.shared-login', ['shareCode' => $kid->share_code]) }}')"
+                            onclick="navigator.clipboard.writeText('{{ route('kid.shared-login', ['publicId' => $kid->public_id]) }}').then(() => window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Link copied.', type: 'success' } }))).catch(() => window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Unable to copy link.', type: 'error' } })))"
                         >
                             Copy Link
                         </button>

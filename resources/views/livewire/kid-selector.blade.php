@@ -15,10 +15,7 @@
             <a href="{{ route('parent.login') }}" class="kid-btn kid-btn-primary mt-4 inline-block">Parent Login</a>
         </div>
     @elseif($authenticated && $selectedKidId)
-        <div class="flex items-center justify-between">
-            <h1 class="kid-title">Today's Missions</h1>
-            <button class="kid-btn kid-btn-warn" wire:click="switchKid">Switch Kid</button>
-        </div>
+        <h1 class="kid-title">Today's Missions</h1>
 
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />
     @elseif($selectedKidId)

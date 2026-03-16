@@ -16,7 +16,7 @@ class Kid extends Model
         'avatar',
         'color',
         'pin',
-        'share_code',
+        'public_id',
         'points',
     ];
 
@@ -27,19 +27,19 @@ class Kid extends Model
     protected static function booted(): void
     {
         static::creating(function (Kid $kid) {
-            if (! $kid->share_code) {
-                $kid->share_code = self::generateShareCode();
+            if (! $kid->public_id) {
+                $kid->public_id = self::generatePublicId();
             }
         });
     }
 
-    public static function generateShareCode(): string
+    public static function generatePublicId(): string
     {
         do {
-            $code = Str::upper(Str::random(8));
-        } while (self::query()->where('share_code', $code)->exists());
+            $publicId = (string) Str::ulid();
+        } while (self::query()->where('public_id', $publicId)->exists());
 
-        return $code;
+        return $publicId;
     }
 
     public function parent()

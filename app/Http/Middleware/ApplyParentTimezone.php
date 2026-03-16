@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Kid;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -24,6 +25,21 @@ class ApplyParentTimezone
 
                 if ($timezone !== '') {
                     $request->session()->put('parent_timezone', $timezone);
+                }
+            }
+
+            if ($timezone === '') {
+                $sharedKidId = (int) $request->session()->get('shared_kid_id', 0);
+
+                if ($sharedKidId > 0) {
+                    $timezone = (string) Kid::query()
+                        ->with('parent:id,timezone')
+                        ->whereKey($sharedKidId)
+                        ->first()?->parent?->timezone;
+
+                    if ($timezone !== '') {
+                        $request->session()->put('parent_timezone', $timezone);
+                    }
                 }
             }
         }

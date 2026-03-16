@@ -11,6 +11,8 @@ class PinLogin extends Component
 
     public int $parentId = 0;
 
+    public int $sharedKidId = 0;
+
     public string $pin = '';
 
     public string $errorMessage = '';
@@ -18,13 +20,22 @@ class PinLogin extends Component
     public function mount(): void
     {
         $this->parentId = (int) session('parent_user_id');
+        $this->sharedKidId = (int) session('shared_kid_id');
     }
 
     public function submit(): void
     {
-        $kid = Kid::query()
-            ->where('parent_id', $this->parentId)
-            ->find($this->kidId);
+        $kidQuery = Kid::query();
+
+        if ($this->parentId > 0) {
+            $kidQuery->where('parent_id', $this->parentId);
+        } elseif ($this->sharedKidId > 0) {
+            $kidQuery->whereKey($this->sharedKidId);
+        } else {
+            $kidQuery->whereRaw('1 = 0');
+        }
+
+        $kid = $kidQuery->find($this->kidId);
 
         if (! $kid || $kid->getRawOriginal('pin') !== $this->pin) {
             $this->errorMessage = 'That PIN is not correct. Try again!';

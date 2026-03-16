@@ -3,21 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kid;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class KidSharedLinkController extends Controller
 {
-    public function __invoke(Request $request, string $shareCode): RedirectResponse
+    public function __invoke(Request $request, string $publicId): View
     {
         $kid = Kid::query()
-            ->where('share_code', strtoupper($shareCode))
+            ->with('parent')
+            ->where('public_id', $publicId)
             ->firstOrFail();
 
-        $request->session()->put('parent_user_id', $kid->parent_id);
+        $request->session()->forget(['parent_user_id']);
+        $request->session()->put('shared_kid_id', $kid->id);
         $request->session()->put('preselected_kid_id', $kid->id);
+        $request->session()->put('parent_timezone', (string) ($kid->parent?->timezone ?: config('app.timezone')));
         $request->session()->forget('kid_id');
 
-        return redirect()->route('kid.login');
+        return view('pages.kid-login');
     }
 }

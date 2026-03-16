@@ -14,11 +14,14 @@ class KidSelector extends Component
 
     public int $parentId = 0;
 
+    public int $sharedKidId = 0;
+
     public function mount(): void
     {
         $this->parentId = (int) session('parent_user_id');
+        $this->sharedKidId = (int) session('shared_kid_id');
 
-        if ($this->parentId <= 0) {
+        if ($this->parentId <= 0 && $this->sharedKidId <= 0) {
             $this->switchKid();
 
             return;
@@ -61,6 +64,14 @@ class KidSelector extends Component
     {
         session()->forget(['kid_id', 'preselected_kid_id']);
         $this->authenticated = false;
+
+        if ($this->sharedKidId > 0) {
+            $this->selectedKidId = $this->sharedKidId;
+            session()->put('preselected_kid_id', $this->sharedKidId);
+
+            return;
+        }
+
         $this->selectedKidId = null;
     }
 
@@ -80,13 +91,21 @@ class KidSelector extends Component
 
     private function ownedKids()
     {
-        return Kid::query()->where('parent_id', $this->parentId);
+        if ($this->parentId > 0) {
+            return Kid::query()->where('parent_id', $this->parentId);
+        }
+
+        if ($this->sharedKidId > 0) {
+            return Kid::query()->whereKey($this->sharedKidId);
+        }
+
+        return Kid::query()->whereRaw('1 = 0');
     }
 
     public function render()
     {
         return view('livewire.kid-selector', [
-            'parentMissing' => $this->parentId <= 0,
+            'parentMissing' => $this->parentId <= 0 && $this->sharedKidId <= 0,
             'kids' => $this->ownedKids()->orderBy('name')->get(),
         ]);
     }

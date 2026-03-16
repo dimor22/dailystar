@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
-Route::get('/k/{shareCode}', KidSharedLinkController::class)->name('kid.shared-login');
+Route::get('/k/{publicId}', KidSharedLinkController::class)->name('kid.shared-login');
 
 Route::view('/students', 'pages.kid-login')->name('kid.login');
 

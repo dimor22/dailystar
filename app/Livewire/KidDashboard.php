@@ -15,6 +15,8 @@ class KidDashboard extends Component
 
     public int $parentId = 0;
 
+    public int $sharedKidId = 0;
+
     public array $tasks = [];
 
     public string $kidName = '';
@@ -40,12 +42,17 @@ class KidDashboard extends Component
     public function mount(?int $kidId = null): void
     {
         $this->parentId = (int) session('parent_user_id');
+        $this->sharedKidId = (int) session('shared_kid_id');
 
-        abort_unless($this->parentId > 0, 403);
+        abort_unless($this->parentId > 0 || $this->sharedKidId > 0, 403);
 
         $resolvedKidId = $kidId ?? session('kid_id');
 
         abort_unless($resolvedKidId, 403);
+
+        if ($this->sharedKidId > 0) {
+            abort_unless((int) $resolvedKidId === $this->sharedKidId, 403);
+        }
 
         $this->kidId = (int) $resolvedKidId;
         $this->loadDashboard();
@@ -54,10 +61,15 @@ class KidDashboard extends Component
     #[On('task-completed')]
     public function loadDashboard(): void
     {
-        $kid = Kid::query()
-            ->with(['tasks', 'streak'])
-            ->where('parent_id', $this->parentId)
-            ->findOrFail($this->kidId);
+        $kidQuery = Kid::query()->with(['tasks', 'streak']);
+
+        if ($this->parentId > 0) {
+            $kidQuery->where('parent_id', $this->parentId);
+        } else {
+            $kidQuery->whereKey($this->sharedKidId);
+        }
+
+        $kid = $kidQuery->findOrFail($this->kidId);
         $today = now()->toDateString();
         $todayWeekday = strtolower(now()->format('l'));
         $this->currentDate = $today;
