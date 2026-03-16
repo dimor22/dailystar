@@ -104,7 +104,8 @@ class ParentDashboard extends Component
         $this->activityLogs = ActivityLog::query()
             ->with(['kid', 'task'])
             ->whereHas('kid', fn ($query) => $query->where('parent_id', $parent->id))
-            ->latest('created_at')
+            ->orderByDesc('completed_at')
+            ->orderByDesc('created_at')
             ->limit(20)
             ->get()
             ->map(fn (ActivityLog $log) => [

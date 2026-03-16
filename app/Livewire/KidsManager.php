@@ -187,12 +187,23 @@ class KidsManager extends Component
             ->delete();
 
         if ($deletedCount > 0) {
+            $today = now()->toDateString();
+
             $activityLogIds = ActivityLog::query()
                 ->where('kid_id', $kid->id)
                 ->where('task_id', $task->id)
                 ->where('action', 'Completed')
-                ->whereDate('created_at', now()->toDateString())
-                ->latest('id')
+                ->where(function ($query) use ($today) {
+                    $query
+                        ->whereDate('completed_at', $today)
+                        ->orWhere(function ($innerQuery) use ($today) {
+                            $innerQuery
+                                ->whereNull('completed_at')
+                                ->whereDate('created_at', $today);
+                        });
+                })
+                ->orderByDesc('completed_at')
+                ->orderByDesc('created_at')
                 ->limit($deletedCount)
                 ->pluck('id')
                 ->all();
