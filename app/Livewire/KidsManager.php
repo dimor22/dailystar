@@ -44,6 +44,8 @@ class KidsManager extends Component
 
     public array $assignedTaskDays = [];
 
+    public array $completedTaskIdsToday = [];
+
     public ?int $editingKidId = null;
 
     public function mount(): void
@@ -98,6 +100,13 @@ class KidsManager extends Component
             ->mapWithKeys(fn (KidTask $kidTask) => [
                 (int) $kidTask->task_id => $this->weekDaysFromStoredValue($kidTask->days_of_week),
             ])
+            ->all();
+
+        $this->completedTaskIdsToday = TaskCompletion::query()
+            ->where('kid_id', $kid->id)
+            ->whereDate('completed_date', now()->toDateString())
+            ->pluck('task_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         $this->updatedAssignedTaskIds();
@@ -221,12 +230,17 @@ class KidsManager extends Component
 
             $updatedPoints = max(0, ((int) $kid->points) - ($task->points * $deletedCount));
             $kid->update(['points' => $updatedPoints]);
-            session()->flash('reset_task_success', 'Task reset for today.');
+            $this->completedTaskIdsToday = array_values(array_filter(
+                $this->completedTaskIdsToday,
+                fn (int $completedTaskId) => $completedTaskId !== (int) $task->id
+            ));
+
+            $this->dispatch('toast', message: 'Task reseted.', type: 'success');
 
             return;
         }
 
-        session()->flash('reset_task_success', 'No completion found for today.');
+        $this->dispatch('toast', message: 'No completion found for today.', type: 'warning');
     }
 
     public function deleteKid(int $kidId): void
@@ -372,6 +386,7 @@ class KidsManager extends Component
         $this->formPin = '';
         $this->assignedTaskIds = [];
         $this->assignedTaskDays = [];
+        $this->completedTaskIdsToday = [];
         $this->resetErrorBag();
     }
 

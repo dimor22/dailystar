@@ -44,10 +44,6 @@
                 </div>
                 <button type="submit" class="kid-btn kid-btn-primary">Save Timezone</button>
             </form>
-
-            @if (session()->has('timezone_success'))
-                <p class="mt-3 text-sm font-semibold text-green-600">{{ session('timezone_success') }}</p>
-            @endif
         </div>
     </div>
 

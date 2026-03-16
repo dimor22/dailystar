@@ -142,7 +142,7 @@ class ParentDashboard extends Component
         $this->parentTimezone = (string) $parent->timezone;
         $this->timezone = (string) $parent->timezone;
 
-        session()->flash('timezone_success', 'Timezone updated successfully.');
+        $this->dispatch('toast', message: 'Timezone updated successfully.', type: 'success');
     }
 
     public function render()

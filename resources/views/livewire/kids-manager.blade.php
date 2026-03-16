@@ -52,10 +52,6 @@
                 <p class="mb-2 text-xs text-slate-500">New task assignments default to Mon-Fri. You can customize days per task below.</p>
 
                 @if($editingKidId)
-                    @if (session()->has('reset_task_success'))
-                        <p class="mb-2 text-sm font-semibold text-green-600">{{ session('reset_task_success') }}</p>
-                    @endif
-
                     <div class="grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
                         @forelse($availableTasks as $task)
                             <div class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
@@ -85,13 +81,15 @@
                                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
 
-                                        <button
-                                            type="button"
-                                            wire:click="resetTaskForKid({{ $task->id }})"
-                                            class="mt-2 rounded-lg bg-slate-700 px-2 py-1 text-xs font-bold text-white"
-                                        >
-                                            Reset Today
-                                        </button>
+                                        @if(in_array($task->id, $completedTaskIdsToday, true))
+                                            <button
+                                                type="button"
+                                                wire:click="resetTaskForKid({{ $task->id }})"
+                                                class="mt-2 rounded-lg bg-slate-700 px-2 py-1 text-xs font-bold text-white"
+                                            >
+                                                Reset Today
+                                            </button>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
