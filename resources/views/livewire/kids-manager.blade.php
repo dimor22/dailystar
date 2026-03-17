@@ -29,7 +29,7 @@
 
             <div>
                 <label class="mb-1 block text-sm font-semibold text-slate-700">Avatar Image (Optional)</label>
-                <input wire:model.live="formAvatarImage" type="file" accept=".jpeg,.jpg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                <input wire:model.live="formAvatarImage" type="file" accept=".jpeg,.jpg,.png,.webp,.avif,image/jpeg,image/png,image/webp,image/avif" class="w-full rounded-xl border border-slate-300 px-3 py-2">
                 <p class="mt-1 text-xs text-slate-500">Accepted: jpeg, jpg, png, webp · Max 1MB</p>
                 @error('formAvatarImage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
 

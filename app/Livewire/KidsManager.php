@@ -390,7 +390,7 @@ class KidsManager extends Component
             'formName' => ['required', 'string', 'max:100'],
             'formAvatar' => ['required', 'string', 'max:10'],
             'formAvatarDisplayMode' => ['required', Rule::in(['emoji', 'image'])],
-            'formAvatarImage' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:1024'],
+            'formAvatarImage' => ['nullable', 'mimetypes:image/jpeg,image/png,image/webp,image/avif', 'mimes:jpeg,jpg,png,webp,avif', 'max:1024'],
             'formColor' => ['required', Rule::in($colorClasses)],
             'formPin' => ['required', 'digits:4'],
             'assignedTaskIds' => ['nullable', 'array'],

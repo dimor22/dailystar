@@ -212,7 +212,7 @@ class TasksManager extends Component
         return [
             'formTitle' => ['required', 'string', 'max:120'],
             'formDescription' => ['nullable', 'string', 'max:1000'],
-            'formTaskImage' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:1024'],
+            'formTaskImage' => ['nullable', 'mimetypes:image/jpeg,image/png,image/webp,image/avif', 'mimes:jpeg,jpg,png,webp,avif', 'max:1024'],
             'formPoints' => ['required', 'integer', 'min:1', 'max:1000'],
             'formCategory' => ['required', 'string', 'max:100'],
             'formActive' => ['required', 'boolean'],
