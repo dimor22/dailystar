@@ -1,4 +1,4 @@
-<div class="space-y-6" wire:poll.30s="loadDashboard" x-data="{ settingsOpen: false }">
+<div class="space-y-6" wire:poll.5s="loadDashboard" x-data="{ settingsOpen: false }">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between">
         <div>
             <h1 class="kid-title">Parent Dashboard</h1>
@@ -49,7 +49,12 @@
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         @forelse($kids as $kid)
-            <div class="kid-card">
+            <div
+                class="kid-card transition-all duration-500"
+                x-data="{ flash: @js($kid['just_updated']) }"
+                x-init="if (flash) { setTimeout(() => flash = false, 2200) }"
+                :class="flash ? 'ring-4 ring-emerald-300 bg-emerald-50/80 shadow-lg shadow-emerald-200/70 scale-[1.01]' : ''"
+            >
                 <div class="flex items-center justify-between">
                     @if($kid['avatar_display_mode'] === 'image' && $kid['avatar_image_path'])
                         <img src="{{ \Illuminate\Support\Facades\Storage::url($kid['avatar_image_path']) }}" alt="{{ $kid['name'] }} avatar" class="h-12 w-12 rounded-full object-cover bg-white p-1" />
@@ -61,6 +66,13 @@
                 <p class="mt-3 text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>
                 <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
                 <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
+                <p
+                    x-show="flash"
+                    x-transition.opacity.duration.300ms
+                    class="mt-2 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white"
+                >
+                    Task completed
+                </p>
 
                 <div class="mt-3">
                     <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />

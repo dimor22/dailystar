@@ -37,6 +37,14 @@ class ParentDashboard extends Component
     {
         $this->dashboardDateTime = now()->format('l, F j • h:i A');
 
+        $previousProgressByKid = collect($this->kids)
+            ->mapWithKeys(fn (array $kid) => [
+                (int) $kid['id'] => [
+                    'completed' => (int) ($kid['completed'] ?? 0),
+                ],
+            ])
+            ->all();
+
         $parent = User::query()
             ->where('role', 'parent')
             ->whereKey($this->parentId)
@@ -67,7 +75,7 @@ class ParentDashboard extends Component
             ->where('parent_id', $parent->id)
             ->orderBy('name')
             ->get()
-            ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService) {
+            ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService, $previousProgressByKid) {
                 $visibleTasks = KidTask::query()
                     ->with('task:id,title')
                     ->where('kid_id', $kid->id)
@@ -112,6 +120,8 @@ class ParentDashboard extends Component
 
                 $totalTasks = count($visibleTaskIds);
                 $completedTasks = count($completedTaskNames);
+                $previousCompletedTasks = (int) ($previousProgressByKid[$kid->id]['completed'] ?? 0);
+                $justUpdated = ! empty($previousProgressByKid) && $completedTasks > $previousCompletedTasks;
 
                 return [
                     'id' => $kid->id,
@@ -124,6 +134,7 @@ class ParentDashboard extends Component
                     'stars' => $gamificationService->starsFromPoints((int) $kid->points),
                     'completed' => $completedTasks,
                     'total' => $totalTasks,
+                    'just_updated' => $justUpdated,
                     'completed_task_names' => $completedTaskNames,
                     'pending_task_names' => $pendingTaskNames,
                     'streak' => (int) ($kid->streak->current_streak ?? 0),
