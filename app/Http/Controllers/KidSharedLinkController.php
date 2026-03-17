@@ -19,7 +19,12 @@ class KidSharedLinkController extends Controller
         $request->session()->put('shared_kid_id', $kid->id);
         $request->session()->put('preselected_kid_id', $kid->id);
         $request->session()->put('parent_timezone', (string) ($kid->parent?->timezone ?: config('app.timezone')));
-        $request->session()->forget('kid_id');
+
+        $activeKidId = (int) $request->session()->get('kid_id', 0);
+
+        if ($activeKidId > 0 && $activeKidId !== (int) $kid->id) {
+            $request->session()->forget('kid_id');
+        }
 
         return view('pages.kid-login');
     }
