@@ -95,18 +95,23 @@ class ParentDashboard extends Component
                     ->pluck('task_id')
                     ->all();
 
-                $completedTaskIds = TaskCompletion::query()
+                $completedTaskCompletions = TaskCompletion::query()
+                    ->with('task:id,title')
                     ->where('kid_id', $kid->id)
                     ->whereDate('completed_date', $today)
                     ->whereIn('task_id', $visibleTaskIds)
+                    ->orderBy('completed_at')
+                    ->orderBy('created_at')
+                    ->get();
+
+                $completedTaskIds = $completedTaskCompletions
                     ->pluck('task_id')
                     ->all();
 
                 $completedTaskIdLookup = array_fill_keys($completedTaskIds, true);
 
-                $completedTaskNames = $visibleTasks
-                    ->filter(fn (KidTask $kidTask) => isset($completedTaskIdLookup[$kidTask->task_id]))
-                    ->map(fn (KidTask $kidTask) => (string) $kidTask->task?->title)
+                $completedTaskNames = $completedTaskCompletions
+                    ->map(fn (TaskCompletion $taskCompletion) => (string) $taskCompletion->task?->title)
                     ->filter(fn (string $title) => $title !== '')
                     ->values()
                     ->all();
