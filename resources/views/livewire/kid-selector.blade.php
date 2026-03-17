@@ -19,15 +19,20 @@
 
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />
     @elseif($selectedKidId)
-        <div class="flex gap-4 justify-center items-center mb-6">
-            @if($selectedKid->avatar_display_mode === 'image' && $selectedKid->avatar_image_path)
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($selectedKid->avatar_image_path) }}" alt="{{ $selectedKid->name }} avatar" class="bg-white rounded-full p-2 h-30 w-30 object-cover" />
-            @else
-                <span class="text-6xl bg-white rounded-full p-4 flex justify-center items-center h-30 w-30">{{ $selectedKid->avatar }}</span>
-            @endif
-            <h1 class="kid-title text-center text-6xl">{{ $selectedKid->name }}</h1>
+        <div class="grid gap-6 lg:grid-cols-2 max-w-[60%] mx-auto">
+            <div class="flex flex-col gap-4 justify-center items-center mb-6">
+                @if($selectedKid->avatar_display_mode === 'image' && $selectedKid->avatar_image_path)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($selectedKid->avatar_image_path) }}" alt="{{ $selectedKid->name }} avatar" class="bg-white rounded-xl p-2 h-30 w-30 object-contain" />
+                @else
+                    <span class="text-6xl bg-white rounded-full p-4 flex justify-center items-center h-30 w-30">{{ $selectedKid->avatar }}</span>
+                @endif
+
+                <h1 class="kid-title text-center text-6xl">{{ $selectedKid->name }}</h1>
+            </div>
+
+            <livewire:pin-login :kidId="$selectedKidId" :key="'pin-login-'.$selectedKidId" />
         </div>
-        <livewire:pin-login :kidId="$selectedKidId" :key="'pin-login-'.$selectedKidId" />
+
     @elseif($kids->isNotEmpty())
         <h1 class="kid-title text-center">Choose Your Avatar</h1>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
