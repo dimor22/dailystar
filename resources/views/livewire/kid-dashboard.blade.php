@@ -36,6 +36,7 @@
                 :taskId="$task['id']"
                 :title="$task['title']"
                 :description="$task['description']"
+                :taskImagePath="$task['image_path']"
                 :points="$task['points']"
                 :completed="$task['completed']"
                 :key="'task-'.$kidId.'-'.$task['id'].'-'.$task['completed']"

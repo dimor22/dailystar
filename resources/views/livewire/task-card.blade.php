@@ -1,5 +1,5 @@
 <div
-    class="kid-card relative"
+    class="kid-card relative overflow-hidden"
     x-data="{
         openConfirm: false,
         isDone: @js($completed),
@@ -42,6 +42,12 @@
         }
     }"
 >
+    @if($taskImagePath)
+        <div class="-mx-6 -mt-6 mb-4 h-44 w-auto overflow-hidden">
+            <img src="{{ \Illuminate\Support\Facades\Storage::url($taskImagePath) }}" alt="{{ $title }} image" class="h-full w-full object-cover" />
+        </div>
+    @endif
+
     <div class="flex items-center justify-between gap-3">
         <h3 class="text-kid-xl font-bold text-slate-800">{{ $title }}</h3>
         <span class="rounded-full bg-amber-200 px-3 py-1 text-lg font-bold text-amber-700">+{{ $points }}</span>

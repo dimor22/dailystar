@@ -107,6 +107,7 @@ class KidDashboard extends Component
                     'id' => $task->id,
                     'title' => $task->title,
                     'description' => $task->description,
+                    'image_path' => $task->image_path,
                     'points' => $task->points,
                     'completed' => in_array($task->id, $completedTaskIds, true),
                 ];

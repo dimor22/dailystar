@@ -5,11 +5,16 @@ namespace App\Livewire;
 use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\Task;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class TasksManager extends Component
 {
+    use WithFileUploads;
+
     private const DEFAULT_WEEK_DAYS = [
         'monday',
         'tuesday',
@@ -23,6 +28,12 @@ class TasksManager extends Component
     public string $formTitle = '';
 
     public string $formDescription = '';
+
+    public ?UploadedFile $formTaskImage = null;
+
+    public ?string $currentTaskImagePath = null;
+
+    public bool $removeCurrentTaskImage = false;
 
     public int $formPoints = 10;
 
@@ -47,9 +58,12 @@ class TasksManager extends Component
         $validated = $this->validate($this->rules());
 
         DB::transaction(function () use ($validated) {
+            $taskImagePath = $this->storeTaskImageIfUploaded($this->formTaskImage);
+
             $task = Task::query()->create([
                 'title' => $validated['formTitle'],
                 'description' => $validated['formDescription'] ?: null,
+                'image_path' => $taskImagePath,
                 'points' => $validated['formPoints'],
                 'category' => $validated['formCategory'],
                 'active' => $validated['formActive'],
@@ -82,6 +96,9 @@ class TasksManager extends Component
         $this->editingTaskId = $task->id;
         $this->formTitle = $task->title;
         $this->formDescription = (string) ($task->description ?? '');
+        $this->currentTaskImagePath = $task->image_path;
+        $this->formTaskImage = null;
+        $this->removeCurrentTaskImage = false;
         $this->formPoints = (int) $task->points;
         $this->formCategory = (string) ($task->category ?? 'Study');
         $this->formActive = (bool) $task->active;
@@ -96,9 +113,23 @@ class TasksManager extends Component
         $task = $this->ownedTasks()->findOrFail($this->editingTaskId);
         $validated = $this->validate($this->rules());
 
+        $newTaskImagePath = $this->storeTaskImageIfUploaded($this->formTaskImage);
+        $shouldRemoveExistingImage = $this->removeCurrentTaskImage;
+        $activeTaskImagePath = $newTaskImagePath
+            ?: ($shouldRemoveExistingImage ? null : $task->image_path);
+
+        if ($newTaskImagePath && $task->image_path) {
+            Storage::disk('public')->delete($task->image_path);
+        }
+
+        if ($shouldRemoveExistingImage && $task->image_path && ! $newTaskImagePath) {
+            Storage::disk('public')->delete($task->image_path);
+        }
+
         $task->update([
             'title' => $validated['formTitle'],
             'description' => $validated['formDescription'] ?: null,
+            'image_path' => $activeTaskImagePath,
             'points' => $validated['formPoints'],
             'category' => $validated['formCategory'],
             'active' => $validated['formActive'],
@@ -123,6 +154,10 @@ class TasksManager extends Component
             ->delete();
 
         if (! KidTask::query()->where('task_id', $task->id)->exists()) {
+            if ($task->image_path) {
+                Storage::disk('public')->delete($task->image_path);
+            }
+
             $task->delete();
         }
 
@@ -131,6 +166,25 @@ class TasksManager extends Component
         }
 
         $this->dispatch('toast', message: 'Task deleted.', type: 'success');
+    }
+
+    public function updatedFormTaskImage(): void
+    {
+        $this->validateOnly('formTaskImage');
+
+        if ($this->formTaskImage) {
+            $this->removeCurrentTaskImage = false;
+        }
+    }
+
+    public function removeTaskImage(): void
+    {
+        $this->formTaskImage = null;
+
+        if ($this->currentTaskImagePath) {
+            $this->removeCurrentTaskImage = true;
+            $this->currentTaskImagePath = null;
+        }
     }
 
     public function cancelEdit(): void
@@ -153,15 +207,25 @@ class TasksManager extends Component
         });
     }
 
-    private function rules(): array
+    protected function rules(): array
     {
         return [
             'formTitle' => ['required', 'string', 'max:120'],
             'formDescription' => ['nullable', 'string', 'max:1000'],
+            'formTaskImage' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:1024'],
             'formPoints' => ['required', 'integer', 'min:1', 'max:1000'],
             'formCategory' => ['required', 'string', 'max:100'],
             'formActive' => ['required', 'boolean'],
         ];
+    }
+
+    private function storeTaskImageIfUploaded(?UploadedFile $uploadedFile): ?string
+    {
+        if (! $uploadedFile) {
+            return null;
+        }
+
+        return $uploadedFile->store('task-images', 'public');
     }
 
     private function resetForm(): void
@@ -169,6 +233,9 @@ class TasksManager extends Component
         $this->editingTaskId = null;
         $this->formTitle = '';
         $this->formDescription = '';
+        $this->formTaskImage = null;
+        $this->currentTaskImagePath = null;
+        $this->removeCurrentTaskImage = false;
         $this->formPoints = 10;
         $this->formCategory = 'Study';
         $this->formActive = true;

@@ -14,6 +14,8 @@ class TaskCard extends Component
 
     public ?string $description = null;
 
+    public ?string $taskImagePath = null;
+
     public int $points = 0;
 
     public bool $completed = false;
