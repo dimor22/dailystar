@@ -51,7 +51,11 @@
         @forelse($kids as $kid)
             <div class="kid-card">
                 <div class="flex items-center justify-between">
-                    <p class="text-4xl">{{ $kid['avatar'] }}</p>
+                    @if($kid['avatar_display_mode'] === 'image' && $kid['avatar_image_path'])
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($kid['avatar_image_path']) }}" alt="{{ $kid['name'] }} avatar" class="h-12 w-12 rounded-full object-cover bg-white p-1" />
+                    @else
+                        <p class="text-4xl">{{ $kid['avatar'] }}</p>
+                    @endif
                     <span class="rounded-full px-3 py-1 text-sm font-bold text-white {{ $kid['color'] }}">{{ $kid['name'] }}</span>
                 </div>
                 <p class="mt-3 text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>

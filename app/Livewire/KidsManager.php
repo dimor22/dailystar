@@ -7,11 +7,16 @@ use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\Task;
 use App\Models\TaskCompletion;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class KidsManager extends Component
 {
+    use WithFileUploads;
+
     private const WEEK_DAYS = [
         'monday',
         'tuesday',
@@ -35,6 +40,14 @@ class KidsManager extends Component
     public string $formName = '';
 
     public string $formAvatar = '🦁';
+
+    public string $formAvatarDisplayMode = 'emoji';
+
+    public ?UploadedFile $formAvatarImage = null;
+
+    public ?string $currentAvatarImagePath = null;
+
+    public bool $removeCurrentAvatarImage = false;
 
     public string $formColor = 'bg-blue-500';
 
@@ -63,10 +76,18 @@ class KidsManager extends Component
 
         $validated = $this->validate($this->rules());
 
+        $avatarImagePath = $this->storeAvatarImageIfUploaded($this->formAvatarImage);
+        $avatarDisplayMode = $this->resolveAvatarDisplayMode(
+            $validated['formAvatarDisplayMode'] ?? 'emoji',
+            $avatarImagePath
+        );
+
         Kid::query()->create([
             'parent_id' => $this->parentId,
             'name' => $validated['formName'],
             'avatar' => $validated['formAvatar'],
+            'avatar_image_path' => $avatarImagePath,
+            'avatar_display_mode' => $avatarDisplayMode,
             'color' => $validated['formColor'],
             'pin' => $validated['formPin'],
             'points' => 0,
@@ -83,6 +104,10 @@ class KidsManager extends Component
         $this->editingKidId = $kid->id;
         $this->formName = $kid->name;
         $this->formAvatar = $kid->avatar;
+        $this->formAvatarDisplayMode = (string) ($kid->avatar_display_mode ?: 'emoji');
+        $this->currentAvatarImagePath = $kid->avatar_image_path;
+        $this->removeCurrentAvatarImage = false;
+        $this->formAvatarImage = null;
         $this->formColor = $kid->color;
         $this->formPin = $kid->getRawOriginal('pin');
         $this->assignedTaskIds = KidTask::query()
@@ -123,9 +148,29 @@ class KidsManager extends Component
 
         $validated = $this->validate($this->rules());
 
+        $avatarImagePath = $this->storeAvatarImageIfUploaded($this->formAvatarImage);
+        $shouldRemoveExistingImage = $this->removeCurrentAvatarImage;
+
+        $activeAvatarImagePath = $avatarImagePath
+            ?: ($shouldRemoveExistingImage ? null : $kid->avatar_image_path);
+        $avatarDisplayMode = $this->resolveAvatarDisplayMode(
+            $validated['formAvatarDisplayMode'] ?? 'emoji',
+            $activeAvatarImagePath
+        );
+
+        if ($avatarImagePath && $kid->avatar_image_path) {
+            Storage::disk('public')->delete($kid->avatar_image_path);
+        }
+
+        if ($shouldRemoveExistingImage && $kid->avatar_image_path && ! $avatarImagePath) {
+            Storage::disk('public')->delete($kid->avatar_image_path);
+        }
+
         $kid->update([
             'name' => $validated['formName'],
             'avatar' => $validated['formAvatar'],
+            'avatar_image_path' => $activeAvatarImagePath,
+            'avatar_display_mode' => $avatarDisplayMode,
             'color' => $validated['formColor'],
             'pin' => $validated['formPin'],
         ]);
@@ -145,6 +190,34 @@ class KidsManager extends Component
 
         $this->resetForm();
         $this->dispatch('toast', message: 'Kid updated.', type: 'success');
+    }
+
+    public function updatedFormAvatarImage(): void
+    {
+        $this->validateOnly('formAvatarImage');
+
+        if ($this->formAvatarImage) {
+            $this->removeCurrentAvatarImage = false;
+            $this->formAvatarDisplayMode = 'image';
+
+            return;
+        }
+
+        if (! $this->currentAvatarImagePath) {
+            $this->formAvatarDisplayMode = 'emoji';
+        }
+    }
+
+    public function removeAvatarImage(): void
+    {
+        $this->formAvatarImage = null;
+
+        if ($this->currentAvatarImagePath) {
+            $this->removeCurrentAvatarImage = true;
+            $this->currentAvatarImagePath = null;
+        }
+
+        $this->formAvatarDisplayMode = 'emoji';
     }
 
     public function updatedAssignedTaskIds(): void
@@ -249,6 +322,10 @@ class KidsManager extends Component
     {
         $kid = $this->ownedKids()->findOrFail($kidId);
 
+        if ($kid->avatar_image_path) {
+            Storage::disk('public')->delete($kid->avatar_image_path);
+        }
+
         $this->ownedKids()->whereKey($kidId)->delete();
 
         if ($this->editingKidId === $kidId) {
@@ -301,7 +378,7 @@ class KidsManager extends Component
         return Kid::query()->where('parent_id', $this->parentId);
     }
 
-    private function rules(): array
+    protected function rules(): array
     {
         $allowedTaskIds = $this->availableTasks()->pluck('id')->all();
 
@@ -312,6 +389,8 @@ class KidsManager extends Component
         return [
             'formName' => ['required', 'string', 'max:100'],
             'formAvatar' => ['required', 'string', 'max:10'],
+            'formAvatarDisplayMode' => ['required', Rule::in(['emoji', 'image'])],
+            'formAvatarImage' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:1024'],
             'formColor' => ['required', Rule::in($colorClasses)],
             'formPin' => ['required', 'digits:4'],
             'assignedTaskIds' => ['nullable', 'array'],
@@ -388,12 +467,34 @@ class KidsManager extends Component
         $this->editingKidId = null;
         $this->formName = '';
         $this->formAvatar = '🦁';
+        $this->formAvatarDisplayMode = 'emoji';
+        $this->formAvatarImage = null;
+        $this->currentAvatarImagePath = null;
+        $this->removeCurrentAvatarImage = false;
         $this->formColor = 'bg-blue-500';
         $this->formPin = '';
         $this->assignedTaskIds = [];
         $this->assignedTaskDays = [];
         $this->completedTaskIdsToday = [];
         $this->resetErrorBag();
+    }
+
+    private function storeAvatarImageIfUploaded(?UploadedFile $uploadedFile): ?string
+    {
+        if (! $uploadedFile) {
+            return null;
+        }
+
+        return $uploadedFile->store('kid-avatars', 'public');
+    }
+
+    private function resolveAvatarDisplayMode(string $requestedMode, ?string $avatarImagePath): string
+    {
+        if (! $avatarImagePath) {
+            return 'emoji';
+        }
+
+        return $requestedMode === 'image' ? 'image' : 'emoji';
     }
 
     private function sanitizeAssignedTaskDays(array $taskIds): array

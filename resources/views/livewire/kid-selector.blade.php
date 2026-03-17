@@ -20,7 +20,11 @@
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />
     @elseif($selectedKidId)
         <div class="flex gap-4 justify-center items-center mb-6">
-            <span class="text-6xl bg-white rounded-full p-4 flex justify-center items-center h-30 w-30">{{ $selectedKid->avatar }}</span>
+            @if($selectedKid->avatar_display_mode === 'image' && $selectedKid->avatar_image_path)
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($selectedKid->avatar_image_path) }}" alt="{{ $selectedKid->name }} avatar" class="bg-white rounded-full p-2 h-30 w-30 object-cover" />
+            @else
+                <span class="text-6xl bg-white rounded-full p-4 flex justify-center items-center h-30 w-30">{{ $selectedKid->avatar }}</span>
+            @endif
             <h1 class="kid-title text-center text-6xl">{{ $selectedKid->name }}</h1>
         </div>
         <livewire:pin-login :kidId="$selectedKidId" :key="'pin-login-'.$selectedKidId" />
@@ -33,7 +37,11 @@
                     wire:click="selectKid({{ $kid->id }})"
                     class="kid-card {{ $kid->color }} text-center text-black"
                 >
-                    <div class="text-6xl">{{ $kid->avatar }}</div>
+                    @if($kid->avatar_display_mode === 'image' && $kid->avatar_image_path)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($kid->avatar_image_path) }}" alt="{{ $kid->name }} avatar" class="mx-auto h-20 w-20 rounded-full object-cover bg-white p-1" />
+                    @else
+                        <div class="text-6xl">{{ $kid->avatar }}</div>
+                    @endif
                     <p class="mt-3 text-kid-xl font-bold">{{ $kid->name }}</p>
                 </button>
             @endforeach

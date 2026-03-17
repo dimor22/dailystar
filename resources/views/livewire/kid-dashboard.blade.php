@@ -2,6 +2,11 @@
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="kid-card">
             <p class="text-lg font-semibold text-slate-600">Kid</p>
+            @if($kidAvatarDisplayMode === 'image' && $kidAvatarImagePath)
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($kidAvatarImagePath) }}" alt="{{ $kidName }} avatar" class="mt-3 h-20 w-20 rounded-full object-cover bg-white p-1" />
+            @else
+                <div class="mt-3 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-5xl">{{ $kidAvatar }}</div>
+            @endif
             <p class="kid-title">{{ $kidName }}</p>
             <p class="text-sm text-slate-500">Timezone: {{ config('app.timezone') }}</p>
         </div>

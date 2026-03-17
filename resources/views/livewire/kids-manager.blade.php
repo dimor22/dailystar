@@ -28,6 +28,44 @@
             </div>
 
             <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">Avatar Image (Optional)</label>
+                <input wire:model.live="formAvatarImage" type="file" accept=".jpeg,.jpg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                <p class="mt-1 text-xs text-slate-500">Accepted: jpeg, jpg, png, webp · Max 1MB</p>
+                @error('formAvatarImage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                @if($formAvatarImage || $currentAvatarImagePath)
+                    <div class="mt-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <img
+                            src="{{ $formAvatarImage ? $formAvatarImage->temporaryUrl() : \Illuminate\Support\Facades\Storage::url($currentAvatarImagePath) }}"
+                            alt="Avatar preview"
+                            class="h-14 w-14 rounded-full object-cover bg-white p-1"
+                        >
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-500">Avatar image preview</p>
+                            <button
+                                type="button"
+                                wire:click="removeAvatarImage"
+                                class="mt-1 rounded-lg border border-red-300 px-2 py-1 text-xs font-bold text-red-600"
+                            >
+                                Remove image
+                            </button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            @if($formAvatarImage || $currentAvatarImagePath)
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-slate-700">Show As</label>
+                    <select wire:model.live="formAvatarDisplayMode" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                        <option value="emoji">Emoji</option>
+                        <option value="image">Image</option>
+                    </select>
+                    @error('formAvatarDisplayMode') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            @endif
+
+            <div>
                 <label class="mb-1 block text-sm font-semibold text-slate-700">Color</label>
                 <select wire:model.live="formColor" class="w-full rounded-xl border border-slate-300 px-3 py-2">
                     @foreach($colorOptions as $option)
@@ -113,7 +151,11 @@
             @forelse($kids as $kid)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     <div class="rounded-2xl p-4 text-center text-white {{ $kid->color }}">
-                        <div class="text-4xl">{{ $kid->avatar }}</div>
+                        @if($kid->avatar_display_mode === 'image' && $kid->avatar_image_path)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($kid->avatar_image_path) }}" alt="{{ $kid->name }} avatar" class="mx-auto h-16 w-16 rounded-full object-cover bg-white p-1" />
+                        @else
+                            <div class="text-4xl">{{ $kid->avatar }}</div>
+                        @endif
                         <p class="mt-2 text-lg font-bold">{{ $kid->name }}</p>
                     </div>
                     <p class="mt-3 text-sm text-slate-600">Points: {{ $kid->points }}</p>

@@ -91,6 +91,8 @@ class ParentDashboard extends Component
                     'id' => $kid->id,
                     'name' => $kid->name,
                     'avatar' => $kid->avatar,
+                    'avatar_display_mode' => (string) ($kid->avatar_display_mode ?: 'emoji'),
+                    'avatar_image_path' => $kid->avatar_image_path,
                     'color' => $kid->color,
                     'points' => $kid->points,
                     'stars' => $gamificationService->starsFromPoints((int) $kid->points),

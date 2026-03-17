@@ -21,6 +21,12 @@ class KidDashboard extends Component
 
     public string $kidName = '';
 
+    public string $kidAvatar = '';
+
+    public string $kidAvatarDisplayMode = 'emoji';
+
+    public ?string $kidAvatarImagePath = null;
+
     public int $points = 0;
 
     public int $stars = 0;
@@ -108,6 +114,9 @@ class KidDashboard extends Component
             ->all();
 
         $this->kidName = $kid->name;
+        $this->kidAvatar = (string) $kid->avatar;
+        $this->kidAvatarDisplayMode = (string) ($kid->avatar_display_mode ?: 'emoji');
+        $this->kidAvatarImagePath = $kid->avatar_image_path;
         $this->points = (int) $kid->points;
         $this->stars = app(GamificationService::class)->starsFromPoints($this->points);
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);

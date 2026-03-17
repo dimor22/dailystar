@@ -14,6 +14,8 @@ class Kid extends Model
         'parent_id',
         'name',
         'avatar',
+        'avatar_image_path',
+        'avatar_display_mode',
         'color',
         'pin',
         'public_id',
