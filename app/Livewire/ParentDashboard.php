@@ -68,7 +68,8 @@ class ParentDashboard extends Component
             ->orderBy('name')
             ->get()
             ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService) {
-                $visibleTaskIds = KidTask::query()
+                $visibleTasks = KidTask::query()
+                    ->with('task:id,title')
                     ->where('kid_id', $kid->id)
                     ->where('active', true)
                     ->where(function ($query) use ($todayWeekday) {
@@ -77,15 +78,40 @@ class ParentDashboard extends Component
                             ->orWhereJsonLength('days_of_week', 0)
                             ->orWhereJsonContains('days_of_week', $todayWeekday);
                     })
+                    ->orderBy('order')
+                    ->get()
+                    ->filter(fn (KidTask $kidTask) => $kidTask->task !== null)
+                    ->values();
+
+                $visibleTaskIds = $visibleTasks
                     ->pluck('task_id')
                     ->all();
 
-                $totalTasks = count($visibleTaskIds);
-                $completedTasks = TaskCompletion::query()
+                $completedTaskIds = TaskCompletion::query()
                     ->where('kid_id', $kid->id)
                     ->whereDate('completed_date', $today)
                     ->whereIn('task_id', $visibleTaskIds)
-                    ->count();
+                    ->pluck('task_id')
+                    ->all();
+
+                $completedTaskIdLookup = array_fill_keys($completedTaskIds, true);
+
+                $completedTaskNames = $visibleTasks
+                    ->filter(fn (KidTask $kidTask) => isset($completedTaskIdLookup[$kidTask->task_id]))
+                    ->map(fn (KidTask $kidTask) => (string) $kidTask->task?->title)
+                    ->filter(fn (string $title) => $title !== '')
+                    ->values()
+                    ->all();
+
+                $pendingTaskNames = $visibleTasks
+                    ->filter(fn (KidTask $kidTask) => ! isset($completedTaskIdLookup[$kidTask->task_id]))
+                    ->map(fn (KidTask $kidTask) => (string) $kidTask->task?->title)
+                    ->filter(fn (string $title) => $title !== '')
+                    ->values()
+                    ->all();
+
+                $totalTasks = count($visibleTaskIds);
+                $completedTasks = count($completedTaskNames);
 
                 return [
                     'id' => $kid->id,
@@ -98,6 +124,8 @@ class ParentDashboard extends Component
                     'stars' => $gamificationService->starsFromPoints((int) $kid->points),
                     'completed' => $completedTasks,
                     'total' => $totalTasks,
+                    'completed_task_names' => $completedTaskNames,
+                    'pending_task_names' => $pendingTaskNames,
                     'streak' => (int) ($kid->streak->current_streak ?? 0),
                 ];
             })
