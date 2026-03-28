@@ -188,8 +188,10 @@
                     </div>
 
                     <div class="mt-3 flex gap-2">
+                        <button type="button" wire:click.prevent="loginAsKid({{ $kid->id }})" class="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-bold text-white">Login as Kid</button>
                         <button type="button" wire:click.prevent="editKid({{ $kid->id }})" class="rounded-xl bg-blue-500 px-3 py-2 text-sm font-bold text-white">Edit</button>
                         <button type="button" wire:click.prevent="deleteKid({{ $kid->id }})" wire:confirm="Delete {{ $kid->name }}?" class="rounded-xl bg-red-500 px-3 py-2 text-sm font-bold text-white">Delete</button>
+
                     </div>
                 </div>
             @empty

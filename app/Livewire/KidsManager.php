@@ -340,6 +340,20 @@ class KidsManager extends Component
         $this->resetForm();
     }
 
+    public function loginAsKid(int $kidId): void
+    {
+        if (! $this->ownedKids()->whereKey($kidId)->exists()) {
+            $this->dispatch('toast', message: 'Kid not found.', type: 'error');
+
+            return;
+        }
+
+        session()->put('kid_id', $kidId);
+        session()->forget('preselected_kid_id');
+
+        $this->redirect(route('kid.login'));
+    }
+
     public function render()
     {
         $colorOptions = $this->colorOptions();
