@@ -49,13 +49,29 @@
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         @forelse($kids as $kid)
+            @php
+                $cardGradientColor = match ($kid['color']) {
+                    'bg-blue-500' => 'rgba(59, 130, 246, 0.24)',
+                    'bg-pink-500' => 'rgba(236, 72, 153, 0.24)',
+                    'bg-green-500' => 'rgba(34, 197, 94, 0.24)',
+                    'bg-yellow-500' => 'rgba(234, 179, 8, 0.24)',
+                    'bg-purple-500' => 'rgba(168, 85, 247, 0.24)',
+                    'bg-orange-500' => 'rgba(249, 115, 22, 0.24)',
+                    default => 'rgba(148, 163, 184, 0.2)',
+                };
+            @endphp
             <div
-                class="kid-card transition-all duration-500"
+                class="kid-card relative overflow-hidden transition-all duration-500"
                 x-data="{ flash: @js($kid['just_updated']) }"
                 x-init="if (flash) { setTimeout(() => flash = false, 2200) }"
                 :class="flash ? 'ring-4 ring-emerald-300 bg-emerald-50/80 shadow-lg shadow-emerald-200/70 scale-[1.01]' : ''"
             >
-                <div class="flex items-center justify-between">
+                <div
+                    class="pointer-events-none absolute inset-0"
+                    style="background: linear-gradient(to bottom left, {{ $cardGradientColor }} 0%, rgba(255, 255, 255, 0) 62%);"
+                ></div>
+
+                <div class="relative z-10 flex items-center justify-between">
                     @if($kid['avatar_display_mode'] === 'image' && $kid['avatar_image_path'])
                         <img src="{{ \Illuminate\Support\Facades\Storage::url($kid['avatar_image_path']) }}" alt="{{ $kid['name'] }} avatar" class="h-12 w-12 rounded-full object-cover bg-white p-1" />
                     @else
@@ -63,24 +79,27 @@
                     @endif
                     <span class="rounded-full px-3 py-1 text-2xl font-bold text-white {{ $kid['color'] }}">{{ $kid['name'] }}</span>
                 </div>
-                <div class="mt-3">
+
+                <div class="relative z-10 mt-3">
                     <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />
                 </div>
-                <div class="my-3  grid grid-cols-3 gap-4">
+
+                <div class="relative z-10 my-3 grid grid-cols-3 gap-4">
                     <p class="text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>
                     <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
                     <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
                 </div>
+
                 <p
                     x-show="flash"
                     x-transition.opacity.duration.300ms
-                    class="mt-2 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white"
+                    class="relative z-10 mt-2 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white"
                 >
                     Task completed
                 </p>
 
 
-                <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                <div class="relative z-10 mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div class="rounded-lg bg-emerald-100 px-2 py-2 text-emerald-700">
                         <p class="font-semibold">Completed</p>
                         @if(count($kid['completed_task_names']) > 0)
