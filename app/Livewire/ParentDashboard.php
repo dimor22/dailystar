@@ -9,6 +9,7 @@ use App\Models\TaskCompletion;
 use App\Models\User;
 use App\Services\GamificationService;
 use DateTimeZone;
+use Illuminate\Support\Carbon;
 use Livewire\Component;
 
 class ParentDashboard extends Component
@@ -16,6 +17,16 @@ class ParentDashboard extends Component
     public array $kids = [];
 
     public array $activityLogs = [];
+
+    public string $activitySearch = '';
+
+    public int $activityDayPage = 1;
+
+    public int $activityDaysPerPage = 1;
+
+    public int $activityTotalDayPages = 1;
+
+    public int $activityTotalDays = 0;
 
     public int $parentId = 0;
 
@@ -55,6 +66,8 @@ class ParentDashboard extends Component
             $this->activityLogs = [];
             $this->parentEmail = '';
             $this->parentTimezone = '';
+            $this->activityTotalDayPages = 1;
+            $this->activityTotalDays = 0;
 
             return;
         }
@@ -147,22 +160,96 @@ class ParentDashboard extends Component
             })
             ->all();
 
-        $this->activityLogs = ActivityLog::query()
+        $timezone = $this->parentTimezone !== '' ? $this->parentTimezone : config('app.timezone');
+        $search = strtolower(trim($this->activitySearch));
+
+        $logs = ActivityLog::query()
             ->with(['kid', 'task'])
             ->whereHas('kid', fn ($query) => $query->where('parent_id', $parent->id))
             ->orderByDesc('completed_at')
             ->orderByDesc('created_at')
-            ->limit(20)
+            ->limit(400)
             ->get()
-            ->map(fn (ActivityLog $log) => [
-                'kid' => $log->kid?->name ?? 'Unknown',
-                'task' => $log->task?->title ?? '-',
-                'action' => str_starts_with($log->action, 'completed:')
-                    ? 'Completed'
-                    : $log->action,
-                'completed_at' => optional($log->completed_at ?? $log->created_at)->format('M d, h:i A') ?? '',
-            ])
+            ->map(function (ActivityLog $log) use ($timezone) {
+                $timestamp = ($log->completed_at ?? $log->created_at)?->copy();
+                $kid = $log->kid?->name ?? 'Unknown';
+                $task = $log->task?->title ?? '-';
+                $action = str_starts_with($log->action, 'completed:') ? 'Completed' : $log->action;
+
+                if (! $timestamp) {
+                    $timestamp = now();
+                }
+
+                $timestamp = $timestamp->setTimezone($timezone);
+
+                return [
+                    'kid' => $kid,
+                    'task' => $task,
+                    'action' => $action,
+                    'completed_at' => $timestamp->format('M d, h:i A'),
+                    'search_time' => strtolower($timestamp->format('M d, h:i A l F j Y g:i a H:i')),
+                    'date_key' => $timestamp->toDateString(),
+                    'date_label' => $timestamp->format('l, M j, Y'),
+                ];
+            })
+            ->filter(function (array $log) use ($search) {
+                if ($search === '') {
+                    return true;
+                }
+
+                return str_contains(strtolower($log['kid']), $search)
+                    || str_contains(strtolower($log['task']), $search)
+                    || str_contains(strtolower($log['action']), $search)
+                    || str_contains($log['search_time'], $search);
+            })
+            ->values();
+
+        $days = $logs
+            ->groupBy('date_key')
+            ->sortKeysDesc();
+
+        $this->activityTotalDays = $days->count();
+        $this->activityTotalDayPages = max(1, (int) ceil($this->activityTotalDays / $this->activityDaysPerPage));
+        $this->activityDayPage = min(max(1, $this->activityDayPage), $this->activityTotalDayPages);
+
+        $dayStart = ($this->activityDayPage - 1) * $this->activityDaysPerPage;
+        $visibleDays = $days->slice($dayStart, $this->activityDaysPerPage);
+
+        $this->activityLogs = $visibleDays
+            ->map(function ($dayLogs, string $dateKey) {
+                $firstLog = $dayLogs->first();
+
+                return [
+                    'date_key' => $dateKey,
+                    'date_label' => $firstLog['date_label'] ?? Carbon::parse($dateKey)->format('l, M j, Y'),
+                    'logs' => $dayLogs
+                        ->map(fn (array $log) => [
+                            'kid' => $log['kid'],
+                            'task' => $log['task'],
+                            'action' => $log['action'],
+                            'completed_at' => $log['completed_at'],
+                        ])
+                        ->values()
+                        ->all(),
+                ];
+            })
+            ->values()
             ->all();
+    }
+
+    public function updatedActivitySearch(): void
+    {
+        $this->activityDayPage = 1;
+    }
+
+    public function previousActivityDayPage(): void
+    {
+        $this->activityDayPage = max(1, $this->activityDayPage - 1);
+    }
+
+    public function nextActivityDayPage(): void
+    {
+        $this->activityDayPage = min($this->activityTotalDayPages, $this->activityDayPage + 1);
     }
 
     public function updateTimezone(): void

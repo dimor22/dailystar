@@ -112,32 +112,82 @@
     </div>
 
     <div class="kid-card">
-        <h2 class="text-kid-xl font-bold text-slate-800">Activity Log</h2>
-        <div class="mt-4 overflow-x-auto">
-            <table class="w-full text-left text-lg">
-                <thead>
-                    <tr class="border-b-2 border-slate-200">
-                        <th class="py-2">Kid</th>
-                        <th class="py-2">Task</th>
-                        <th class="py-2">Action</th>
-                        <th class="py-2">Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($activityLogs as $log)
-                        <tr class="border-b border-slate-100">
-                            <td class="py-2">{{ $log['kid'] }}</td>
-                            <td class="py-2">{{ $log['task'] }}</td>
-                            <td class="py-2">{{ $log['action'] }}</td>
-                            <td class="py-2">{{ $log['completed_at'] }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="py-3 text-slate-500">No activity yet.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2 class="text-kid-xl font-bold text-slate-800">Activity Log</h2>
+                <p class="text-sm text-slate-500">Search by kid, task, action, or time.</p>
+            </div>
+
+            <div class="w-full sm:w-80">
+                <label for="activity-search" class="mb-1 block text-sm font-semibold text-slate-700">Search Logs</label>
+                <input
+                    id="activity-search"
+                    type="text"
+                    wire:model.live.debounce.300ms="activitySearch"
+                    placeholder="Try: Ava, homework, 8:30"
+                    class="w-full rounded-xl border border-slate-300 px-3 py-2"
+                >
+            </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2">
+            <button
+                type="button"
+                wire:click="previousActivityDayPage"
+                class="rounded-lg bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+                @disabled($activityDayPage <= 1)
+            >
+                Previous Day
+            </button>
+            <p class="text-sm font-semibold text-slate-600">
+                Day Page {{ $activityDayPage }} of {{ $activityTotalDayPages }}
+                <span class="font-normal">({{ $activityTotalDays }} total days)</span>
+            </p>
+            <button
+                type="button"
+                wire:click="nextActivityDayPage"
+                class="rounded-lg bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+                @disabled($activityDayPage >= $activityTotalDayPages)
+            >
+                Next Day
+            </button>
+        </div>
+
+        <div class="mt-4 space-y-4">
+            @forelse($activityLogs as $day)
+                <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div class="border-b border-slate-200 bg-slate-50 px-4 py-2">
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-slate-600">{{ $day['date_label'] }}</h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-lg">
+                            <thead>
+                                <tr class="border-b-2 border-slate-200">
+                                    <th class="px-4 py-2">Kid</th>
+                                    <th class="px-4 py-2">Task</th>
+                                    <th class="px-4 py-2">Action</th>
+                                    <th class="px-4 py-2">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($day['logs'] as $log)
+                                    <tr class="border-b border-slate-100 last:border-b-0">
+                                        <td class="px-4 py-2">{{ $log['kid'] }}</td>
+                                        <td class="px-4 py-2">{{ $log['task'] }}</td>
+                                        <td class="px-4 py-2">{{ $log['action'] }}</td>
+                                        <td class="px-4 py-2">{{ $log['completed_at'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @empty
+                <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-500">
+                    No activity matches your search.
+                </div>
+            @endforelse
         </div>
     </div>
 </div>
