@@ -6,6 +6,7 @@ use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\TaskCompletion;
 use App\Services\GamificationService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -54,31 +55,30 @@ class KidDashboard extends Component
 
         if ($this->parentId <= 0 && $this->sharedKidId <= 0) {
             session()->forget('kid_id');
-            $this->redirectRoute('kid.login', navigate: true);
-
-            return;
+            $this->redirectToKidLogin();
         }
 
         $resolvedKidId = $kidId ?? session('kid_id');
 
         if (! $resolvedKidId) {
-            $this->redirectRoute('kid.login', navigate: true);
-
-            return;
+            $this->redirectToKidLogin();
         }
 
         if ($this->sharedKidId > 0) {
             if ((int) $resolvedKidId !== $this->sharedKidId) {
                 session()->forget('kid_id');
                 session()->put('preselected_kid_id', $this->sharedKidId);
-                $this->redirectRoute('kid.login', navigate: true);
-
-                return;
+                $this->redirectToKidLogin();
             }
         }
 
         $this->kidId = (int) $resolvedKidId;
         $this->loadDashboard();
+    }
+
+    private function redirectToKidLogin(): never
+    {
+        throw new HttpResponseException(response()->redirectToRoute('kid.login'));
     }
 
     #[On('task-completed')]
