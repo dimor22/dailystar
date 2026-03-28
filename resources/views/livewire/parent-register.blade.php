@@ -1,4 +1,8 @@
 <div class="mx-auto max-w-xl kid-card">
+    <div class="mb-4 flex justify-center">
+        <x-site-logo class="h-12 w-44" />
+    </div>
+
     <h1 class="kid-title text-center">Create Parent Account</h1>
     <p class="mt-2 text-center text-slate-600">Create your account to manage your kids and tasks.</p>
 

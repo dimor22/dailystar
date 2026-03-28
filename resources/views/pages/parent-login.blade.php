@@ -1,5 +1,9 @@
 <x-layouts.app :title="'Parent Login'">
     <div class="mx-auto max-w-lg kid-card">
+        <div class="mb-4 flex justify-center">
+            <x-site-logo class="h-12 w-44" />
+        </div>
+
         <h1 class="kid-title text-center">Parent Login</h1>
 
         <form action="{{ route('parent.login.submit') }}" method="POST" class="mt-6 space-y-4">
