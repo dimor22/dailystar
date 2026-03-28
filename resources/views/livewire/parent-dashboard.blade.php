@@ -50,7 +50,7 @@
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         @forelse($kids as $kid)
             @php
-                $cardGradientColor = match ($kid['color']) {
+                $cardGradientColor = match ($kid['color'] ?? 'bg-blue-500') {
                     'bg-blue-500' => 'rgba(59, 130, 246, 0.24)',
                     'bg-pink-500' => 'rgba(236, 72, 153, 0.24)',
                     'bg-green-500' => 'rgba(34, 197, 94, 0.24)',
@@ -62,7 +62,7 @@
             @endphp
             <div
                 class="kid-card relative overflow-hidden transition-all duration-500"
-                x-data="{ flash: @js($kid['just_updated']) }"
+                x-data="{ flash: @js((bool) ($kid['just_updated'] ?? false)) }"
                 x-init="if (flash) { setTimeout(() => flash = false, 2600) }"
                 :class="flash ? 'ring-4 ring-emerald-400 bg-emerald-50/90 shadow-[0_0_0_6px_rgba(52,211,153,0.22)] [animation:pulse_0.45s_ease-in-out_infinite]' : ''"
             >
@@ -72,22 +72,22 @@
                 ></div>
 
                 <div class="relative z-10 flex items-center justify-between">
-                    @if($kid['avatar_display_mode'] === 'image' && $kid['avatar_image_path'])
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($kid['avatar_image_path']) }}" alt="{{ $kid['name'] }} avatar" class="h-12 w-12 rounded-full object-cover bg-white p-1" />
+                    @if(($kid['avatar_display_mode'] ?? 'emoji') === 'image' && !empty($kid['avatar_image_path']))
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($kid['avatar_image_path']) }}" alt="{{ $kid['name'] ?? 'Kid' }} avatar" class="h-12 w-12 rounded-full object-cover bg-white p-1" />
                     @else
-                        <p class="text-4xl">{{ $kid['avatar'] }}</p>
+                        <p class="text-4xl">{{ $kid['avatar'] ?? '🙂' }}</p>
                     @endif
-                    <span class="rounded-full px-3 py-1 text-2xl font-bold text-white {{ $kid['color'] }}">{{ $kid['name'] }}</span>
+                    <span class="rounded-full px-3 py-1 text-2xl font-bold text-white {{ $kid['color'] ?? 'bg-blue-500' }}">{{ $kid['name'] ?? 'Kid' }}</span>
                 </div>
 
                 <div class="relative z-10 mt-3">
-                    <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />
+                    <x-progress-bar :current="(int) ($kid['completed'] ?? 0)" :total="(int) ($kid['total'] ?? 0)" />
                 </div>
 
                 <div class="relative z-10 my-3 grid grid-cols-3 gap-4">
-                    <p class="text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>
-                    <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
-                    <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
+                    <p class="text-lg font-bold text-slate-700">Points: {{ (int) ($kid['points'] ?? 0) }}</p>
+                    <p class="text-lg font-bold text-slate-700">Stars: {{ (int) ($kid['stars'] ?? 0) }} ⭐</p>
+                    <p class="text-lg font-bold text-slate-700">Streak: {{ (int) ($kid['streak'] ?? 0) }} 🔥</p>
                 </div>
 
                 <p
@@ -102,9 +102,9 @@
                 <div class="relative z-10 mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div class="rounded-lg bg-emerald-100 px-2 py-2 text-emerald-700">
                         <p class="font-semibold">Completed</p>
-                        @if(count($kid['completed_task_names']) > 0)
+                        @if(count($kid['completed_task_names'] ?? []) > 0)
                             <ul class="mt-1 space-y-1">
-                                @foreach($kid['completed_task_names'] as $taskName)
+                                @foreach(($kid['completed_task_names'] ?? []) as $taskName)
                                     <li class="leading-tight">• {{ $taskName }}</li>
                                 @endforeach
                             </ul>
@@ -114,9 +114,9 @@
                     </div>
                     <div class="rounded-lg bg-slate-100 px-2 py-2 text-slate-700">
                         <p class="font-semibold">Not completed</p>
-                        @if(count($kid['pending_task_names']) > 0)
+                        @if(count($kid['pending_task_names'] ?? []) > 0)
                             <ul class="mt-1 space-y-1">
-                                @foreach($kid['pending_task_names'] as $taskName)
+                                @foreach(($kid['pending_task_names'] ?? []) as $taskName)
                                     <li class="leading-tight">• {{ $taskName }}</li>
                                 @endforeach
                             </ul>
@@ -195,10 +195,10 @@
                             <tbody>
                                 @foreach($day['logs'] as $log)
                                     <tr class="border-b border-slate-100 last:border-b-0">
-                                        <td class="px-4 py-2">{{ $log['kid'] }}</td>
-                                        <td class="px-4 py-2">{{ $log['task'] }}</td>
-                                        <td class="px-4 py-2">{{ $log['action'] }}</td>
-                                        <td class="px-4 py-2">{{ $log['completed_at'] }}</td>
+                                        <td class="px-4 py-2">{{ $log['kid'] ?? 'Unknown' }}</td>
+                                        <td class="px-4 py-2">{{ $log['task'] ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $log['action'] ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $log['completed_at'] ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
