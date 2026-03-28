@@ -52,14 +52,29 @@ class KidDashboard extends Component
         $this->parentId = (int) session('parent_user_id');
         $this->sharedKidId = (int) session('shared_kid_id');
 
-        abort_unless($this->parentId > 0 || $this->sharedKidId > 0, 403);
+        if ($this->parentId <= 0 && $this->sharedKidId <= 0) {
+            session()->forget('kid_id');
+            $this->redirectRoute('kid.login', navigate: true);
+
+            return;
+        }
 
         $resolvedKidId = $kidId ?? session('kid_id');
 
-        abort_unless($resolvedKidId, 403);
+        if (! $resolvedKidId) {
+            $this->redirectRoute('kid.login', navigate: true);
+
+            return;
+        }
 
         if ($this->sharedKidId > 0) {
-            abort_unless((int) $resolvedKidId === $this->sharedKidId, 403);
+            if ((int) $resolvedKidId !== $this->sharedKidId) {
+                session()->forget('kid_id');
+                session()->put('preselected_kid_id', $this->sharedKidId);
+                $this->redirectRoute('kid.login', navigate: true);
+
+                return;
+            }
         }
 
         $this->kidId = (int) $resolvedKidId;
