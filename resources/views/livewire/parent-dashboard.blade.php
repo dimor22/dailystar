@@ -61,11 +61,16 @@
                     @else
                         <p class="text-4xl">{{ $kid['avatar'] }}</p>
                     @endif
-                    <span class="rounded-full px-3 py-1 text-sm font-bold text-white {{ $kid['color'] }}">{{ $kid['name'] }}</span>
+                    <span class="rounded-full px-3 py-1 text-2xl font-bold text-white {{ $kid['color'] }}">{{ $kid['name'] }}</span>
                 </div>
-                <p class="mt-3 text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>
-                <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
-                <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
+                <div class="mt-3">
+                    <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />
+                </div>
+                <div class="my-3  grid grid-cols-3 gap-4">
+                    <p class="text-lg font-bold text-slate-700">Points: {{ $kid['points'] }}</p>
+                    <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
+                    <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
+                </div>
                 <p
                     x-show="flash"
                     x-transition.opacity.duration.300ms
@@ -74,9 +79,7 @@
                     Task completed
                 </p>
 
-                <div class="mt-3">
-                    <x-progress-bar :current="$kid['completed']" :total="$kid['total']" />
-                </div>
+
                 <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div class="rounded-lg bg-emerald-100 px-2 py-2 text-emerald-700">
                         <p class="font-semibold">Completed</p>
