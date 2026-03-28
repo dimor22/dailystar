@@ -27,6 +27,8 @@ class KidDashboard extends Component
 
     public ?string $kidAvatarImagePath = null;
 
+    public string $kidColor = 'bg-blue-500';
+
     public int $points = 0;
 
     public int $stars = 0;
@@ -118,6 +120,7 @@ class KidDashboard extends Component
         $this->kidAvatar = (string) $kid->avatar;
         $this->kidAvatarDisplayMode = (string) ($kid->avatar_display_mode ?: 'emoji');
         $this->kidAvatarImagePath = $kid->avatar_image_path;
+        $this->kidColor = (string) ($kid->color ?: 'bg-blue-500');
         $this->points = (int) $kid->points;
         $this->stars = app(GamificationService::class)->starsFromPoints($this->points);
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);
@@ -156,6 +159,12 @@ class KidDashboard extends Component
 
     public function render()
     {
-        return view('livewire.kid-dashboard');
+        return view('livewire.kid-dashboard', [
+            'kid' => [
+                'stars' => $this->stars,
+                'streak' => $this->currentStreak,
+                'color' => $this->kidColor,
+            ],
+        ]);
     }
 }

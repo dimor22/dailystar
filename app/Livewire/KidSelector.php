@@ -105,6 +105,7 @@ class KidSelector extends Component
     public function render()
     {
         return view('livewire.kid-selector', [
+            'missionsDateTime' => now()->format('l, F j • h:i A'),
             'parentMissing' => $this->parentId <= 0 && $this->sharedKidId <= 0,
             'kids' => $this->ownedKids()->orderBy('name')->get(),
         ]);

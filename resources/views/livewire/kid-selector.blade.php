@@ -16,6 +16,10 @@
         </div>
     @elseif($authenticated && $selectedKidId)
         <h1 class="kid-title">Today's Missions</h1>
+        <p class="mt-2 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-gradient-to-r from-sky-100 via-emerald-100 to-amber-100 px-4 py-1 text-sm font-bold text-slate-700 shadow-sm">
+            <span aria-hidden="true">📅</span>
+            <span>{{ $missionsDateTime }}</span>
+        </p>
 
         <livewire:kid-dashboard :kidId="$selectedKidId" :key="'kid-dashboard-'.$selectedKidId" />
     @elseif($selectedKidId)
