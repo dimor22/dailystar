@@ -53,6 +53,11 @@ class KidDashboard extends Component
         $this->parentId = (int) session('parent_user_id');
         $this->sharedKidId = (int) session('shared_kid_id');
 
+        if ($this->parentId > 0 && $this->sharedKidId > 0) {
+            session()->forget(['shared_kid_id', 'preselected_kid_id']);
+            $this->sharedKidId = 0;
+        }
+
         if ($this->parentId <= 0 && $this->sharedKidId <= 0) {
             session()->forget('kid_id');
             $this->redirectToKidLogin();
@@ -64,7 +69,7 @@ class KidDashboard extends Component
             $this->redirectToKidLogin();
         }
 
-        if ($this->sharedKidId > 0) {
+        if ($this->parentId <= 0 && $this->sharedKidId > 0) {
             if ((int) $resolvedKidId !== $this->sharedKidId) {
                 session()->forget('kid_id');
                 session()->put('preselected_kid_id', $this->sharedKidId);

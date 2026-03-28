@@ -348,8 +348,9 @@ class KidsManager extends Component
             return;
         }
 
+        // Parent shortcut must not be constrained by a prior shared-link session.
+        session()->forget(['shared_kid_id', 'preselected_kid_id']);
         session()->put('kid_id', $kidId);
-        session()->forget('preselected_kid_id');
 
         $this->redirect(route('kid.login'));
     }

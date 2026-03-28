@@ -21,6 +21,11 @@ class KidSelector extends Component
         $this->parentId = (int) session('parent_user_id');
         $this->sharedKidId = (int) session('shared_kid_id');
 
+        if ($this->parentId > 0 && $this->sharedKidId > 0) {
+            session()->forget(['shared_kid_id', 'preselected_kid_id']);
+            $this->sharedKidId = 0;
+        }
+
         if ($this->parentId <= 0 && $this->sharedKidId <= 0) {
             $this->switchKid();
 

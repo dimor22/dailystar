@@ -37,6 +37,7 @@ class ParentAuthController extends Controller
             ])->onlyInput('email');
         }
 
+        $request->session()->forget(['shared_kid_id', 'preselected_kid_id', 'kid_id']);
         $request->session()->put('parent_user_id', $parent->id);
         $request->session()->put('parent_timezone', $parent->timezone);
 
@@ -45,8 +46,7 @@ class ParentAuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        $request->session()->forget('parent_user_id');
-        $request->session()->forget('parent_timezone');
+        $request->session()->forget(['parent_user_id', 'parent_timezone', 'shared_kid_id', 'preselected_kid_id', 'kid_id']);
 
         return redirect()->route('parent.login');
     }
