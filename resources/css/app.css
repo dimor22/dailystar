@@ -6,6 +6,134 @@
 	display: none !important;
 }
 
+@layer base {
+	:root {
+		--marketing-navy: #0f2f3d;
+		--marketing-ocean: #1f6e8c;
+		--marketing-sun: #f5a524;
+		--marketing-mint: #9dd9d2;
+		--marketing-paper: #f6fbfd;
+	}
+}
+
+@layer components {
+	.marketing-body {
+		font-family: 'Nunito Sans', sans-serif;
+		color: var(--marketing-navy);
+		background: var(--marketing-paper);
+	}
+
+	.marketing-bg {
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		background-image:
+			radial-gradient(circle at 8% 8%, rgba(157, 217, 210, 0.45), transparent 35%),
+			radial-gradient(circle at 92% 16%, rgba(245, 165, 36, 0.26), transparent 35%),
+			linear-gradient(180deg, #f4fbff 0%, #e9f6ff 55%, #f7fcff 100%);
+	}
+
+	.marketing-nav-link {
+		@apply rounded-xl px-3 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-sky-100 hover:text-slate-900;
+	}
+
+	.marketing-btn {
+		@apply rounded-xl px-4 py-2 text-sm font-extrabold transition;
+	}
+
+	.marketing-btn-primary {
+		@apply bg-sky-600 text-white hover:bg-sky-700;
+	}
+
+	.marketing-btn-accent {
+		@apply bg-amber-400 text-slate-900 hover:bg-amber-300;
+	}
+
+	.marketing-btn-outline {
+		@apply border border-slate-300 bg-white text-slate-800 hover:border-sky-300 hover:bg-sky-50;
+	}
+
+	.marketing-hero {
+		background: linear-gradient(140deg, rgba(31, 110, 140, 0.14), rgba(157, 217, 210, 0.25));
+		border: 1px solid rgba(31, 110, 140, 0.2);
+		box-shadow: 0 24px 65px rgba(15, 47, 61, 0.11);
+	}
+
+	.marketing-panel {
+		@apply rounded-3xl border border-sky-100 bg-white/95;
+		box-shadow: 0 20px 55px rgba(15, 47, 61, 0.08);
+	}
+
+	.marketing-feature-card {
+		@apply rounded-2xl border border-sky-100 bg-white p-5;
+		box-shadow: 0 8px 26px rgba(15, 47, 61, 0.06);
+	}
+
+	.marketing-eyebrow {
+		@apply text-xs font-extrabold uppercase tracking-[0.16em] text-sky-700;
+	}
+
+	.marketing-h1,
+	.marketing-h2,
+	.marketing-h3,
+	.marketing-stat,
+	.marketing-footer-title {
+		font-family: 'Baloo 2', cursive;
+	}
+
+	.marketing-h1 {
+		@apply text-4xl leading-tight text-slate-900 sm:text-5xl;
+	}
+
+	.marketing-h2 {
+		@apply text-3xl leading-tight text-slate-900 sm:text-4xl;
+	}
+
+	.marketing-h3 {
+		@apply text-2xl leading-tight text-slate-900;
+	}
+
+	.marketing-lead {
+		@apply text-lg font-semibold text-slate-700;
+	}
+
+	.marketing-copy {
+		@apply text-base font-semibold text-slate-700;
+	}
+
+	.marketing-panel-title {
+		@apply text-sm font-extrabold uppercase tracking-[0.14em] text-sky-700;
+	}
+
+	.marketing-stat {
+		@apply text-4xl font-extrabold text-sky-800;
+	}
+
+	.marketing-footer-title {
+		@apply text-2xl font-extrabold text-slate-900;
+	}
+
+	.marketing-footer-copy {
+		@apply text-sm font-semibold text-slate-600;
+	}
+
+	.marketing-footer-link {
+		@apply text-sm font-bold text-slate-700 underline decoration-slate-300 decoration-2 underline-offset-4 transition hover:text-sky-700;
+	}
+
+	.marketing-label {
+		@apply mb-1 block text-sm font-extrabold text-slate-700;
+	}
+
+	.marketing-input {
+		@apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200;
+	}
+
+	.marketing-error {
+		@apply mt-1 text-sm font-bold text-red-600;
+	}
+}
+
 @layer components {
 	.kid-card {
 		@apply rounded-2xl bg-white p-6 shadow-md;

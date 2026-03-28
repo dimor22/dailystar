@@ -1,10 +1,17 @@
 <?php
 
 use App\Http\Controllers\KidSharedLinkController;
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ParentAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/parent/login');
+Route::get('/', [MarketingController::class, 'home'])->name('marketing.home');
+Route::get('/about', [MarketingController::class, 'about'])->name('marketing.about');
+Route::get('/contact', [MarketingController::class, 'contact'])->name('marketing.contact');
+Route::post('/contact', [MarketingController::class, 'submitContact'])->name('marketing.contact.submit');
+Route::get('/terms', [MarketingController::class, 'terms'])->name('marketing.terms');
+Route::get('/privacy', [MarketingController::class, 'privacy'])->name('marketing.privacy');
+Route::get('/donate', [MarketingController::class, 'donate'])->name('marketing.donate');
 
 Route::get('/k/{publicId}', KidSharedLinkController::class)->name('kid.shared-login');
 
