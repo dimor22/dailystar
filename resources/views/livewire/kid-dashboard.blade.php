@@ -1,7 +1,7 @@
 <div class="space-y-6" wire:poll.20s="loadDashboard">
     <div class="grid gap-4 lg:grid-cols-2">
         @php
-            $cardGradientColor = match ($kid['color'] ?? 'bg-blue-500') {
+            $cardGradientColor = match ($kidColor ?? 'bg-blue-500') {
                 'bg-blue-500' => 'rgba(59, 130, 246, 0.24)',
                 'bg-pink-500' => 'rgba(236, 72, 153, 0.24)',
                 'bg-green-500' => 'rgba(34, 197, 94, 0.24)',
@@ -31,8 +31,8 @@
             <div class="relative z-10">
                 <div class="">
                     <p class="text-lg font-bold text-slate-700">Points: {{ $points }}</p>
-                    <p class="text-lg font-bold text-slate-700">Stars: {{ $kid['stars'] }} ⭐</p>
-                    <p class="text-lg font-bold text-slate-700">Streak: {{ $kid['streak'] }} 🔥</p>
+                    <p class="text-lg font-bold text-slate-700">Stars: {{ $stars }} ⭐</p>
+                    <p class="text-lg font-bold text-slate-700">Streak: {{ $currentStreak }} 🔥</p>
                 </div>
 
                 <div class="mt-4">
