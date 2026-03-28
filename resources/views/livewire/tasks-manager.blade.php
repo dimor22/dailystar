@@ -13,7 +13,25 @@
 
             <div>
                 <label class="mb-1 block text-sm font-semibold text-slate-700">Points</label>
-                <input wire:model.live="formPoints" type="number" min="1" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+                <div class="rounded-xl border border-slate-300 bg-white px-3 py-3">
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">5 to 55 points</span>
+                        <span class="rounded-full bg-amber-100 px-2 py-1 text-sm font-bold text-amber-700">{{ (int) $formPoints }} pts</span>
+                    </div>
+                    <input
+                        wire:model.live="formPoints"
+                        type="range"
+                        min="5"
+                        max="55"
+                        step="5"
+                        class="w-full accent-blue-500"
+                    >
+                    <div class="mt-1 flex justify-between text-[11px] font-semibold text-slate-400">
+                        <span>5</span>
+                        <span>30</span>
+                        <span>55</span>
+                    </div>
+                </div>
                 @error('formPoints') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 

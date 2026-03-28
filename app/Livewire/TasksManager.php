@@ -99,7 +99,7 @@ class TasksManager extends Component
         $this->currentTaskImagePath = $task->image_path;
         $this->formTaskImage = null;
         $this->removeCurrentTaskImage = false;
-        $this->formPoints = (int) $task->points;
+        $this->formPoints = max(5, min(50, (int) (round(((int) $task->points) / 5) * 5)));
         $this->formCategory = (string) ($task->category ?? 'Study');
         $this->formActive = (bool) $task->active;
     }
@@ -213,7 +213,7 @@ class TasksManager extends Component
             'formTitle' => ['required', 'string', 'max:120'],
             'formDescription' => ['nullable', 'string', 'max:1000'],
             'formTaskImage' => ['nullable', 'mimetypes:image/jpeg,image/png,image/webp,image/avif', 'mimes:jpeg,jpg,png,webp,avif', 'max:1024'],
-            'formPoints' => ['required', 'integer', 'min:1', 'max:1000'],
+            'formPoints' => ['required', 'integer', 'min:5', 'max:50', 'multiple_of:5'],
             'formCategory' => ['required', 'string', 'max:100'],
             'formActive' => ['required', 'boolean'],
         ];
