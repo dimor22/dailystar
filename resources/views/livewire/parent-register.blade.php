@@ -1,6 +1,23 @@
-<div class="mx-auto max-w-xl kid-card">
+<div
+    class="mx-auto max-w-xl kid-card"
+    x-data
+    x-init="
+        const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const timezoneSelect = $refs.timezoneSelect;
+
+        if (!detected || !timezoneSelect) return;
+
+        const hasOption = Array.from(timezoneSelect.options).some((option) => option.value === detected);
+
+        if (!hasOption) return;
+
+        $wire.set('timezone', detected);
+    "
+>
     <div class="mb-4 flex justify-center">
-        <x-site-logo class="h-12 w-44" />
+        <a href="{{ route('marketing.home') }}" aria-label="Go to DailyStars home">
+            <x-site-logo class="h-14 w-52" />
+        </a>
     </div>
 
     <h1 class="kid-title text-center">Create Parent Account</h1>
@@ -21,7 +38,7 @@
 
         <div>
             <label class="mb-1 block text-sm font-semibold text-slate-700">Timezone</label>
-            <select wire:model.live="timezone" class="w-full rounded-xl border border-slate-300 px-3 py-2">
+            <select x-ref="timezoneSelect" wire:model.live="timezone" class="w-full rounded-xl border border-slate-300 px-3 py-2">
                 @foreach($timezones as $tz)
                     <option value="{{ $tz }}">{{ $tz }}</option>
                 @endforeach

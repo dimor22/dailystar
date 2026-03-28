@@ -1,7 +1,9 @@
 <x-layouts.app :title="'Parent Login'">
     <div class="mx-auto max-w-lg kid-card">
         <div class="mb-4 flex justify-center">
-            <x-site-logo class="h-12 w-44" />
+            <a href="{{ route('marketing.home') }}" aria-label="Go to DailyStars home">
+                    <x-site-logo class="h-14 w-52" />
+            </a>
         </div>
 
         <h1 class="kid-title text-center">Parent Login</h1>
