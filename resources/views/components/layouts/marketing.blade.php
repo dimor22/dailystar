@@ -22,9 +22,24 @@
             </a>
 
             <nav class="flex items-center gap-2 sm:gap-3">
-                <a href="{{ route('marketing.home') }}" class="marketing-nav-link">Home</a>
-                <a href="{{ route('marketing.about') }}" class="marketing-nav-link">About</a>
-                <a href="{{ route('marketing.contact') }}" class="marketing-nav-link">Contact</a>
+                <a
+                    href="{{ route('marketing.home') }}"
+                    class="marketing-nav-link {{ request()->routeIs('marketing.home') ? 'bg-sky-200 text-slate-900 ring-1 ring-sky-300' : '' }}"
+                >
+                    Home
+                </a>
+                <a
+                    href="{{ route('marketing.about') }}"
+                    class="marketing-nav-link {{ request()->routeIs('marketing.about') ? 'bg-sky-200 text-slate-900 ring-1 ring-sky-300' : '' }}"
+                >
+                    About
+                </a>
+                <a
+                    href="{{ route('marketing.contact') }}"
+                    class="marketing-nav-link {{ request()->routeIs('marketing.contact', 'marketing.contact.submit') ? 'bg-sky-200 text-slate-900 ring-1 ring-sky-300' : '' }}"
+                >
+                    Contact
+                </a>
                 <a href="{{ route('marketing.donate') }}" class="marketing-btn marketing-btn-accent">Donate</a>
                 <a href="{{ route('parent.login') }}" class="marketing-btn marketing-btn-primary">Parent Login</a>
             </nav>
