@@ -4,7 +4,7 @@ use App\Http\Controllers\KidSharedLinkController;
 use App\Http\Controllers\ParentAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::redirect('/', '/parent/login');
 
 Route::get('/k/{publicId}', KidSharedLinkController::class)->name('kid.shared-login');
 
