@@ -63,8 +63,8 @@
             <div
                 class="kid-card relative overflow-hidden transition-all duration-500"
                 x-data="{ flash: @js($kid['just_updated']) }"
-                x-init="if (flash) { setTimeout(() => flash = false, 2200) }"
-                :class="flash ? 'ring-4 ring-emerald-300 bg-emerald-50/80 shadow-lg shadow-emerald-200/70 scale-[1.01]' : ''"
+                x-init="if (flash) { setTimeout(() => flash = false, 2600) }"
+                :class="flash ? 'ring-4 ring-emerald-400 bg-emerald-50/90 shadow-[0_0_0_6px_rgba(52,211,153,0.22)] [animation:pulse_0.45s_ease-in-out_infinite]' : ''"
             >
                 <div
                     class="pointer-events-none absolute inset-0"

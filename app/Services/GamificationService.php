@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ActivityLog;
 use App\Models\Kid;
+use App\Models\KidTask;
 use App\Models\Streak;
 use App\Models\Task;
 use App\Models\TaskCompletion;
@@ -66,20 +67,83 @@ class GamificationService
         );
 
         $today = Carbon::parse($completedDate);
-        $lastDate = $streak->last_completed_date ? Carbon::parse($streak->last_completed_date) : null;
 
-        if (! $lastDate) {
-            $streak->current_streak = 1;
-        } elseif ($lastDate->isSameDay($today)) {
+        // Streak day counts only if every scheduled task for that day is completed.
+        if (! $this->isFullyCompletedTaskDay($kid, $today)) {
             return;
-        } elseif ($lastDate->addDay()->isSameDay($today)) {
-            $streak->current_streak++;
-        } else {
-            $streak->current_streak = 1;
         }
 
+        $currentStreak = 0;
+        $cursor = $today->copy();
+
+        // Walk backward: skip no-task days, count full-completion days, stop at first missed task day.
+        while (true) {
+            $status = $this->taskDayStatus($kid, $cursor);
+
+            if (! $status['has_tasks']) {
+                $cursor->subDay();
+
+                continue;
+            }
+
+            if (! $status['fully_completed']) {
+                break;
+            }
+
+            $currentStreak++;
+            $cursor->subDay();
+        }
+
+        $streak->current_streak = $currentStreak;
         $streak->longest_streak = max($streak->longest_streak, $streak->current_streak);
         $streak->last_completed_date = $today->toDateString();
         $streak->save();
+    }
+
+    private function isFullyCompletedTaskDay(Kid $kid, Carbon $date): bool
+    {
+        $status = $this->taskDayStatus($kid, $date);
+
+        return $status['has_tasks'] && $status['fully_completed'];
+    }
+
+    private function taskDayStatus(Kid $kid, Carbon $date): array
+    {
+        $weekday = strtolower($date->format('l'));
+        $dateString = $date->toDateString();
+
+        $scheduledTaskIds = KidTask::query()
+            ->where('kid_id', $kid->id)
+            ->where('active', true)
+            ->where(function ($query) use ($weekday) {
+                $query
+                    ->whereNull('days_of_week')
+                    ->orWhereJsonLength('days_of_week', 0)
+                    ->orWhereJsonContains('days_of_week', $weekday);
+            })
+            ->pluck('task_id')
+            ->map(fn ($taskId) => (int) $taskId)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (count($scheduledTaskIds) === 0) {
+            return [
+                'has_tasks' => false,
+                'fully_completed' => false,
+            ];
+        }
+
+        $completedCount = TaskCompletion::query()
+            ->where('kid_id', $kid->id)
+            ->whereDate('completed_date', $dateString)
+            ->whereIn('task_id', $scheduledTaskIds)
+            ->distinct('task_id')
+            ->count('task_id');
+
+        return [
+            'has_tasks' => true,
+            'fully_completed' => $completedCount === count($scheduledTaskIds),
+        ];
     }
 }
