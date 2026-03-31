@@ -15,6 +15,8 @@ class TasksManager extends Component
 {
     use WithFileUploads;
 
+    private const ALLOWED_POINTS = [5, 10, 20];
+
     private const DEFAULT_WEEK_DAYS = [
         'monday',
         'tuesday',
@@ -99,7 +101,10 @@ class TasksManager extends Component
         $this->currentTaskImagePath = $task->image_path;
         $this->formTaskImage = null;
         $this->removeCurrentTaskImage = false;
-        $this->formPoints = max(5, min(50, (int) (round(((int) $task->points) / 5) * 5)));
+        $taskPoints = (int) $task->points;
+        $this->formPoints = collect(self::ALLOWED_POINTS)
+            ->sortBy(fn (int $allowed) => abs($allowed - $taskPoints))
+            ->first();
         $this->formCategory = (string) ($task->category ?? 'Study');
         $this->formActive = (bool) $task->active;
     }
@@ -213,7 +218,7 @@ class TasksManager extends Component
             'formTitle' => ['required', 'string', 'max:120'],
             'formDescription' => ['nullable', 'string', 'max:1000'],
             'formTaskImage' => ['nullable', 'mimetypes:image/jpeg,image/png,image/webp,image/avif', 'mimes:jpeg,jpg,png,webp,avif', 'max:1024'],
-            'formPoints' => ['required', 'integer', 'min:5', 'max:50', 'multiple_of:5'],
+            'formPoints' => ['required', 'integer', 'in:5,10,20'],
             'formCategory' => ['required', 'string', 'max:100'],
             'formActive' => ['required', 'boolean'],
         ];
