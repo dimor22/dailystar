@@ -4,6 +4,9 @@ namespace App\Livewire;
 
 use App\Models\Kid;
 use App\Models\KidTask;
+use App\Models\PointsStoreItem;
+use App\Models\StarReward;
+use App\Models\StreakBonus;
 use App\Models\TaskCompletion;
 use App\Services\GamificationService;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -47,6 +50,14 @@ class KidDashboard extends Component
     public bool $hasLoadedOnce = false;
 
     public bool $wasAllTasksDone = false;
+
+    public array $nextPointsItem = [];
+
+    public array $nextStarReward = [];
+
+    public array $nextStreakBonus = [];
+
+    public array $starBadges = [];
 
     public function mount(?int $kidId = null): void
     {
@@ -146,6 +157,70 @@ class KidDashboard extends Component
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);
         $this->taskCount = count($this->tasks);
         $this->completedCount = count(array_filter($this->tasks, fn (array $task) => $task['completed']));
+
+        $parentId = $kid->parent_id;
+
+        $nextPointsItemModel = PointsStoreItem::query()
+            ->where('parent_id', $parentId)
+            ->where('active', true)
+            ->where('points', '>', $this->points)
+            ->orderBy('points')
+            ->first()
+            ?? PointsStoreItem::query()
+                ->where('parent_id', $parentId)
+                ->where('active', true)
+                ->orderBy('points')
+                ->first();
+
+        $this->nextPointsItem = $nextPointsItemModel ? [
+            'title' => $nextPointsItemModel->title,
+            'description' => $nextPointsItemModel->description,
+            'points' => $nextPointsItemModel->points,
+            'image_path' => $nextPointsItemModel->image_path,
+            'can_afford' => $this->points >= $nextPointsItemModel->points,
+        ] : [];
+
+        $nextStarRewardModel = StarReward::query()
+            ->where('parent_id', $parentId)
+            ->where('active', true)
+            ->where('stars_needed', '>', $this->stars)
+            ->orderBy('stars_needed')
+            ->first();
+
+        $this->nextStarReward = $nextStarRewardModel ? [
+            'title' => $nextStarRewardModel->title,
+            'description' => $nextStarRewardModel->description,
+            'stars_needed' => $nextStarRewardModel->stars_needed,
+            'image_path' => $nextStarRewardModel->image_path,
+        ] : [];
+
+        $nextStreakBonusModel = StreakBonus::query()
+            ->where('parent_id', $parentId)
+            ->where('day_target', '>', $this->currentStreak)
+            ->orderBy('day_target')
+            ->first();
+
+        $this->nextStreakBonus = $nextStreakBonusModel ? [
+            'title' => $nextStreakBonusModel->title,
+            'description' => $nextStreakBonusModel->description,
+            'day_target' => $nextStreakBonusModel->day_target,
+            'image_path' => $nextStreakBonusModel->image_path,
+        ] : [];
+
+        $this->starBadges = StarReward::query()
+            ->where('parent_id', $parentId)
+            ->where('active', true)
+            ->orderBy('order_number')
+            ->orderBy('stars_needed')
+            ->get()
+            ->map(fn (StarReward $reward) => [
+                'title' => $reward->title,
+                'stars_needed' => (int) $reward->stars_needed,
+                'image_path' => $reward->image_path,
+                'earned' => $this->stars >= (int) $reward->stars_needed,
+            ])
+            ->values()
+            ->all();
 
         $allTasksDone = $this->taskCount > 0 && $this->completedCount === $this->taskCount;
         $dismissedDate = (string) session("celebration_dismissed.{$kid->id}");

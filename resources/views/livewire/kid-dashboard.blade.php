@@ -1,5 +1,5 @@
 <div class="space-y-6" wire:poll.20s="loadDashboard">
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div class="grid gap-4 lg:grid-cols-3">
         @php
             $cardGradientColor = match ($kidColor ?? 'bg-blue-500') {
                 'bg-blue-500' => 'rgba(59, 130, 246, 0.24)',
@@ -12,7 +12,7 @@
             };
         @endphp
 
-        <div class="kid-card relative overflow-hidden grid grid-cols-2 gap-4">
+        <div class="kid-card relative overflow-hidden grid grid-cols-2 gap-4 lg:col-span-2">
             <div
                 class="pointer-events-none absolute inset-0"
                 style="background: linear-gradient(to bottom left, {{ $cardGradientColor }} 0%, rgba(255, 255, 255, 0) 62%);"
@@ -39,11 +39,145 @@
                     <x-progress-bar :current="$completedCount" :total="$taskCount" />
                 </div>
             </div>
+            <div class="col-span-2 mt-4">
+                @if(!empty($starBadges))
+                    <div class="flex gap-2 overflow-x-auto pb-1">
+                        @foreach($starBadges as $badge)
+                            <div class="relative shrink-0" title="{{ $badge['title'] }}">
+                                <div class="flex h-14 w-14 items-center justify-center overflow-hidden {{ $badge['earned'] ? '' : 'grayscale' }}">
+                                    @if(!empty($badge['image_path']))
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($badge['image_path']) }}" alt="{{ $badge['title'] }}" class="h-full w-full object-cover">
+                                    @else
+                                        <span class="text-2xl">⭐</span>
+                                    @endif
+                                </div>
+
+                                @if(! $badge['earned'])
+                                    <div class="pointer-events-none absolute inset-0 rounded-xl bg-slate-400/45"></div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-slate-400">No badges yet.</p>
+                @endif
+            </div>
         </div>
 
+        {{-- Milestones slider --}}
+        <div
+            class="kid-card relative overflow-hidden flex flex-col lg:col-span-1"
+            x-data="{ slide: 0 }"
+            @touchstart.passive="$el._tx = $event.touches[0].clientX"
+            @touchend.passive="let dx = $event.changedTouches[0].clientX - ($el._tx ?? 0); if (dx < -40) slide = (slide + 1) % 3; else if (dx > 40) slide = (slide - 1 + 3) % 3"
+        >
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-kid-xl font-bold text-slate-800">Next Up</h2>
+                <div class="flex items-center gap-1.5">
+                    <button @click="slide = 0" :class="slide === 0 ? 'w-5 bg-amber-400' : 'w-2.5 bg-slate-200'" class="h-2.5 rounded-full transition-all duration-200" aria-label="Points Shop"></button>
+                    <button @click="slide = 1" :class="slide === 1 ? 'w-5 bg-yellow-400' : 'w-2.5 bg-slate-200'" class="h-2.5 rounded-full transition-all duration-200" aria-label="Next Badge"></button>
+                    <button @click="slide = 2" :class="slide === 2 ? 'w-5 bg-orange-400' : 'w-2.5 bg-slate-200'" class="h-2.5 rounded-full transition-all duration-200" aria-label="Streak Goal"></button>
+                </div>
+            </div>
+
+            <div class="relative min-h-[96px]">
+            {{-- Slide 0: Points Shop --}}
+            <div x-show="slide === 0" x-transition.opacity class="absolute inset-0">
+                <div class="flex items-start gap-4">
+                    <div class="shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 overflow-hidden text-4xl">
+                        @if(!empty($nextPointsItem['image_path']))
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($nextPointsItem['image_path']) }}" alt="{{ $nextPointsItem['title'] }}" class="h-full w-full object-cover">
+                        @else
+                            🛍️
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-bold uppercase tracking-wide text-amber-500">Points Shop</p>
+                        @if(!empty($nextPointsItem))
+                            <p class="text-lg font-bold text-slate-800 truncate">{{ $nextPointsItem['title'] }}</p>
+                            @if($nextPointsItem['can_afford'])
+                                <p class="mt-1 text-sm font-bold text-green-600">🎉 You can claim this!</p>
+                            @else
+                                <p class="mt-1 text-sm text-slate-500">{{ $points }} / {{ $nextPointsItem['points'] }} pts</p>
+                            @endif
+                            <div class="mt-2 h-2.5 w-full rounded-full bg-slate-100">
+                                <div class="h-2.5 rounded-full bg-amber-400 transition-all duration-500"
+                                    style="width: {{ min(100, (int) round($points / max(1, $nextPointsItem['points']) * 100)) }}%"></div>
+                            </div>
+                        @else
+                            <p class="text-lg font-bold text-slate-400">No items yet</p>
+                            <p class="mt-1 text-sm text-slate-400">Ask your parent to add store items!</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Slide 1: Star Reward --}}
+            <div x-show="slide === 1" x-transition.opacity class="absolute inset-0">
+                <div class="flex items-start gap-4">
+                    <div class="shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-yellow-50 overflow-hidden text-4xl">
+                        @if(!empty($nextStarReward['image_path']))
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($nextStarReward['image_path']) }}" alt="{{ $nextStarReward['title'] }}" class="h-full w-full object-cover">
+                        @else
+                            ⭐
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-bold uppercase tracking-wide text-yellow-500">Next Badge</p>
+                        @if(!empty($nextStarReward))
+                            <p class="text-lg font-bold text-slate-800 truncate">{{ $nextStarReward['title'] }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $stars }} / {{ $nextStarReward['stars_needed'] }} ⭐</p>
+                            <div class="mt-2 h-2.5 w-full rounded-full bg-slate-100">
+                                <div class="h-2.5 rounded-full bg-yellow-400 transition-all duration-500"
+                                    style="width: {{ min(100, (int) round($stars / max(1, $nextStarReward['stars_needed']) * 100)) }}%"></div>
+                            </div>
+                        @else
+                            <p class="text-lg font-bold text-green-600">All badges earned! 🏆</p>
+                            <p class="mt-1 text-sm text-slate-500">You've collected every star badge!</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Slide 2: Streak Goal --}}
+            <div x-show="slide === 2" x-transition.opacity class="absolute inset-0">
+                <div class="flex items-start gap-4">
+                    <div class="shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 overflow-hidden text-4xl">
+                        @if(!empty($nextStreakBonus['image_path']))
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($nextStreakBonus['image_path']) }}" alt="{{ $nextStreakBonus['title'] }}" class="h-full w-full object-cover">
+                        @else
+                            🔥
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-bold uppercase tracking-wide text-orange-500">Streak Goal</p>
+                        @if(!empty($nextStreakBonus))
+                            <p class="text-lg font-bold text-slate-800 truncate">{{ $nextStreakBonus['title'] }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $currentStreak }} / {{ $nextStreakBonus['day_target'] }} 🔥 days</p>
+                            <div class="mt-2 h-2.5 w-full rounded-full bg-slate-100">
+                                <div class="h-2.5 rounded-full bg-orange-400 transition-all duration-500"
+                                    style="width: {{ min(100, (int) round($currentStreak / max(1, $nextStreakBonus['day_target']) * 100)) }}%"></div>
+                            </div>
+                        @else
+                            <p class="text-lg font-bold text-green-600">All goals smashed! 🏆</p>
+                            <p class="mt-1 text-sm text-slate-500">You've hit every streak goal!</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            {{-- Nav arrows --}}
+            <div class="mt-4 flex justify-between">
+                <button @click="slide = (slide - 1 + 3) % 3"
+                    class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xl font-bold text-slate-500 hover:bg-slate-200 transition">‹</button>
+                <button @click="slide = (slide + 1) % 3"
+                    class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xl font-bold text-slate-500 hover:bg-slate-200 transition">›</button>
+            </div>
+
+
+        </div>
     </div>
-
-
 
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         @foreach($tasks as $task)
