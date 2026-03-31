@@ -527,10 +527,21 @@ class KidsManager extends Component
 
     private function normalizeWeekDays(mixed $days): array
     {
+        if (is_string($days)) {
+            $decoded = json_decode($days, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $days = $decoded;
+            } else {
+                $days = [$days];
+            }
+        }
+
         return collect((array) $days)
             ->map(fn ($day) => strtolower((string) $day))
             ->filter(fn ($day) => in_array($day, self::WEEK_DAYS, true))
             ->unique()
+            ->sortBy(fn (string $day) => array_search($day, self::WEEK_DAYS, true))
             ->values()
             ->all();
     }
@@ -540,7 +551,7 @@ class KidsManager extends Component
         $normalizedDays = $this->normalizeWeekDays($days);
 
         if (empty($normalizedDays)) {
-            return self::WEEK_DAYS;
+            return self::DEFAULT_WEEK_DAYS;
         }
 
         return $normalizedDays;
@@ -550,12 +561,12 @@ class KidsManager extends Component
     {
         $normalizedDays = $this->normalizeWeekDays($days);
 
-        if (count($normalizedDays) === 7) {
+        if ($normalizedDays === self::WEEK_DAYS) {
             return 'Every day';
         }
 
         if ($normalizedDays === self::DEFAULT_WEEK_DAYS) {
-            return 'Mon-Fri';
+            return 'Every week day';
         }
 
         $map = [
