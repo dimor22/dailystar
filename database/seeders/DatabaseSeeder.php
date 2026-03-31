@@ -73,5 +73,11 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        $this->call([
+            PointsStoreItemSeeder::class,
+            StarRewardSeeder::class,
+            StreakBonusSeeder::class,
+        ]);
     }
 }

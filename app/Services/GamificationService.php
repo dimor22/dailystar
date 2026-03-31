@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
 
 class GamificationService
 {
+    private const FULL_DAY_BONUS_POINTS = 10;
+
     public function completeTask(Kid $kid, Task $task, ?CarbonInterface $timestamp = null): bool
     {
         $timestamp = $timestamp ? Carbon::instance($timestamp) : now();
@@ -44,6 +46,8 @@ class GamificationService
             'completed_at' => $timestamp,
         ]);
 
+        $this->awardFullDayBonusIfEligible($kid, $timestamp);
+
         $this->updateStreak($kid, $timestamp->toDateString());
 
         return true;
@@ -51,7 +55,7 @@ class GamificationService
 
     public function starsFromPoints(int $points): int
     {
-        return (int) floor($points / 10);
+        return (int) floor($points / 100);
     }
 
     private function updateStreak(Kid $kid, string $completedDate): void
@@ -98,6 +102,32 @@ class GamificationService
         $streak->longest_streak = max($streak->longest_streak, $streak->current_streak);
         $streak->last_completed_date = $today->toDateString();
         $streak->save();
+    }
+
+    private function awardFullDayBonusIfEligible(Kid $kid, Carbon $timestamp): void
+    {
+        if (! $this->isFullyCompletedTaskDay($kid, $timestamp)) {
+            return;
+        }
+
+        $alreadyAwarded = ActivityLog::query()
+            ->where('kid_id', $kid->id)
+            ->where('action', 'Daily Bonus')
+            ->whereDate('completed_at', $timestamp->toDateString())
+            ->exists();
+
+        if ($alreadyAwarded) {
+            return;
+        }
+
+        $kid->increment('points', self::FULL_DAY_BONUS_POINTS);
+
+        ActivityLog::query()->create([
+            'kid_id' => $kid->id,
+            'task_id' => null,
+            'action' => 'Daily Bonus',
+            'completed_at' => $timestamp,
+        ]);
     }
 
     private function isFullyCompletedTaskDay(Kid $kid, Carbon $date): bool

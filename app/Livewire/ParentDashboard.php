@@ -176,6 +176,11 @@ class ParentDashboard extends Component
                 $task = $log->task?->title ?? '-';
                 $action = str_starts_with($log->action, 'completed:') ? 'Completed' : $log->action;
 
+                if ($log->action === 'Daily Bonus') {
+                    $task = 'Full Day Completion';
+                    $action = 'Daily Bonus (+10 pts)';
+                }
+
                 if (! $timestamp) {
                     $timestamp = now();
                 }

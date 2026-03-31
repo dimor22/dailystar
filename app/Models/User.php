@@ -47,4 +47,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Kid::class, 'parent_id');
     }
+
+    public function pointsStoreItems()
+    {
+        return $this->hasMany(PointsStoreItem::class, 'parent_id');
+    }
+
+    public function starRewards()
+    {
+        return $this->hasMany(StarReward::class, 'parent_id');
+    }
+
+    public function streakBonuses()
+    {
+        return $this->hasMany(StreakBonus::class, 'parent_id');
+    }
 }

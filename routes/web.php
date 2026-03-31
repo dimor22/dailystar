@@ -26,4 +26,8 @@ Route::middleware('parent.auth')->group(function () {
 	Route::view('/dashboard', 'pages.parent-dashboard')->name('parent.dashboard');
 	Route::view('/kids', 'pages.manage-kids')->name('parent.kids');
 	Route::view('/tasks', 'pages.manage-tasks')->name('parent.tasks');
+	Route::redirect('/settings', '/settings/points-store')->name('parent.settings');
+	Route::view('/settings/points-store', 'pages.settings-points-store')->name('parent.settings.points-store');
+	Route::view('/settings/star-rewards', 'pages.settings-star-rewards')->name('parent.settings.star-rewards');
+	Route::view('/settings/streak-bonuses', 'pages.settings-streak-bonuses')->name('parent.settings.streak-bonuses');
 });
