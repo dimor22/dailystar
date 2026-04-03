@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\ActivityLog;
 use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\PointsStoreItem;
@@ -10,6 +11,7 @@ use App\Models\StreakBonus;
 use App\Models\TaskCompletion;
 use App\Services\GamificationService;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -52,6 +54,8 @@ class KidDashboard extends Component
     public bool $wasAllTasksDone = false;
 
     public array $nextPointsItem = [];
+
+    public array $redeemablePointsItems = [];
 
     public array $nextStarReward = [];
 
@@ -100,15 +104,7 @@ class KidDashboard extends Component
     #[On('task-completed')]
     public function loadDashboard(): void
     {
-        $kidQuery = Kid::query()->with(['tasks', 'streak']);
-
-        if ($this->parentId > 0) {
-            $kidQuery->where('parent_id', $this->parentId);
-        } else {
-            $kidQuery->whereKey($this->sharedKidId);
-        }
-
-        $kid = $kidQuery->findOrFail($this->kidId);
+        $kid = $this->resolveKid()->load(['tasks', 'streak']);
         $today = now()->toDateString();
         $todayWeekday = strtolower(now()->format('l'));
         $this->currentDate = $today;
@@ -180,6 +176,23 @@ class KidDashboard extends Component
             'can_afford' => $this->points >= $nextPointsItemModel->points,
         ] : [];
 
+        $this->redeemablePointsItems = PointsStoreItem::query()
+            ->where('parent_id', $parentId)
+            ->where('active', true)
+            ->where('points', '<=', $this->points)
+            ->orderByDesc('points')
+            ->orderBy('title')
+            ->get()
+            ->map(fn (PointsStoreItem $item) => [
+                'id' => (int) $item->id,
+                'title' => (string) $item->title,
+                'description' => (string) ($item->description ?? ''),
+                'points' => (int) $item->points,
+                'image_path' => $item->image_path,
+            ])
+            ->values()
+            ->all();
+
         $nextStarRewardModel = StarReward::query()
             ->where('parent_id', $parentId)
             ->where('active', true)
@@ -245,6 +258,54 @@ class KidDashboard extends Component
         $this->wasAllTasksDone = $allTasksDone;
     }
 
+    public function redeemPointsReward(int $itemId): void
+    {
+        $kid = $this->resolveKid();
+
+        $reward = PointsStoreItem::query()
+            ->where('id', $itemId)
+            ->where('parent_id', $kid->parent_id)
+            ->where('active', true)
+            ->first();
+
+        if (! $reward) {
+            $this->dispatch('toast', message: 'That reward is no longer available.', type: 'warning');
+
+            return;
+        }
+
+        $didRedeem = false;
+
+        DB::transaction(function () use ($kid, $reward, &$didRedeem): void {
+            $lockedKid = Kid::query()->whereKey($kid->id)->lockForUpdate()->first();
+
+            if (! $lockedKid || (int) $lockedKid->points < (int) $reward->points) {
+                return;
+            }
+
+            $lockedKid->decrement('points', (int) $reward->points);
+
+            ActivityLog::query()->create([
+                'kid_id' => $lockedKid->id,
+                'task_id' => null,
+                'action' => 'Redeemed Reward: '.$reward->title,
+                'completed_at' => now(),
+            ]);
+
+            $didRedeem = true;
+        });
+
+        if (! $didRedeem) {
+            $this->dispatch('toast', message: 'Not enough points for that reward.', type: 'error');
+            $this->loadDashboard();
+
+            return;
+        }
+
+        $this->dispatch('toast', message: 'Reward redeemed: '.$reward->title, type: 'success');
+        $this->loadDashboard();
+    }
+
     #[On('celebration-dismissed')]
     public function dismissCelebration(): void
     {
@@ -261,5 +322,18 @@ class KidDashboard extends Component
                 'color' => $this->kidColor,
             ],
         ]);
+    }
+
+    private function resolveKid(): Kid
+    {
+        $kidQuery = Kid::query();
+
+        if ($this->parentId > 0) {
+            $kidQuery->where('parent_id', $this->parentId);
+        } else {
+            $kidQuery->whereKey($this->sharedKidId);
+        }
+
+        return $kidQuery->findOrFail($this->kidId);
     }
 }

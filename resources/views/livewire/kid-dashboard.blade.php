@@ -179,6 +179,52 @@
         </div>
     </div>
 
+    <div class="kid-card">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-kid-xl font-bold text-slate-800">Reward Shop</h2>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
+                {{ count($redeemablePointsItems) }} ready to redeem
+            </span>
+        </div>
+
+        @if(!empty($redeemablePointsItems))
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                @foreach($redeemablePointsItems as $reward)
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white text-3xl">
+                                @if(!empty($reward['image_path']))
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($reward['image_path']) }}" alt="{{ $reward['title'] }}" class="h-full w-full object-cover" />
+                                @else
+                                    🎁
+                                @endif
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-lg font-bold text-slate-800">{{ $reward['title'] }}</p>
+                                <p class="text-sm font-semibold text-emerald-700">{{ $reward['points'] }} points</p>
+                                @if(!empty($reward['description']))
+                                    <p class="mt-1 text-sm text-slate-600 line-clamp-2">{{ $reward['description'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="kid-btn kid-btn-success mt-3 w-full"
+                            wire:click="redeemPointsReward({{ $reward['id'] }})"
+                            wire:loading.attr="disabled"
+                            wire:target="redeemPointsReward"
+                        >
+                            Redeem Reward
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="mt-3 text-slate-500">No rewards are redeemable yet. Keep completing tasks to unlock rewards.</p>
+        @endif
+    </div>
+
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         @foreach($tasks as $task)
             <livewire:task-card
