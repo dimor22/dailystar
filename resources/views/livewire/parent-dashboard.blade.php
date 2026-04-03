@@ -134,6 +134,53 @@
     </div>
 
     <div class="kid-card">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <h2 class="text-kid-xl font-bold text-slate-800">Reward Fulfillment</h2>
+                <p class="text-sm text-slate-500">Offered rewards are waiting on kids to redeem. Redeemed rewards need your fulfillment.</p>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
+                {{ count($rewardStatuses) }} total
+            </span>
+        </div>
+
+        <div class="mt-4 space-y-3">
+            @forelse($rewardStatuses as $rewardStatus)
+                <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm font-extrabold text-slate-800">{{ $rewardStatus['item'] }}</p>
+                            @if($rewardStatus['status'] === 'offered')
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">Offered</span>
+                            @else
+                                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">Redeemed</span>
+                            @endif
+                        </div>
+
+                        @if($rewardStatus['status'] === 'offered')
+                            <p class="text-xs text-slate-500">{{ $rewardStatus['kid'] }} can redeem this now ({{ (int) ($rewardStatus['points'] ?? 0) }} pts). No action required yet.</p>
+                        @else
+                            <p class="text-xs text-slate-500">{{ $rewardStatus['kid'] }} redeemed this on {{ $rewardStatus['redeemed_at'] }}</p>
+                        @endif
+                    </div>
+
+                    @if($rewardStatus['status'] === 'redeemed' && !empty($rewardStatus['id']))
+                        <button
+                            type="button"
+                            wire:click="fulfillRewardRedemption({{ $rewardStatus['id'] }})"
+                            class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-white transition hover:bg-emerald-600"
+                        >
+                            Mark Fulfilled
+                        </button>
+                    @endif
+                </div>
+            @empty
+                <p class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">No offered or redeemed rewards right now.</p>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="kid-card">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h2 class="text-kid-xl font-bold text-slate-800">Activity Log</h2>

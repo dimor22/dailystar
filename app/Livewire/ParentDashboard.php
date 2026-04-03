@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\ActivityLog;
 use App\Models\Kid;
 use App\Models\KidTask;
+use App\Models\PointsStoreItem;
 use App\Models\TaskCompletion;
 use App\Models\User;
 use App\Services\GamificationService;
@@ -15,6 +16,8 @@ use Livewire\Component;
 class ParentDashboard extends Component
 {
     public array $kids = [];
+
+    public array $rewardStatuses = [];
 
     public array $activityLogs = [];
 
@@ -63,6 +66,7 @@ class ParentDashboard extends Component
 
         if (! $parent) {
             $this->kids = [];
+            $this->rewardStatuses = [];
             $this->activityLogs = [];
             $this->parentEmail = '';
             $this->parentTimezone = '';
@@ -83,11 +87,13 @@ class ParentDashboard extends Component
         $todayWeekday = strtolower(now()->format('l'));
         $gamificationService = app(GamificationService::class);
 
-        $this->kids = Kid::query()
+        $kidModels = Kid::query()
             ->with(['tasks', 'streak'])
             ->where('parent_id', $parent->id)
             ->orderBy('name')
-            ->get()
+            ->get();
+
+        $this->kids = $kidModels
             ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService, $previousProgressByKid) {
                 $visibleTasks = KidTask::query()
                     ->with('task:id,title')
@@ -163,6 +169,104 @@ class ParentDashboard extends Component
         $timezone = $this->parentTimezone !== '' ? $this->parentTimezone : config('app.timezone');
         $search = strtolower(trim($this->activitySearch));
 
+        $rewardLogs = ActivityLog::query()
+            ->with('kid')
+            ->whereHas('kid', fn ($query) => $query->where('parent_id', $parent->id))
+            ->where(function ($query) {
+                $query
+                    ->where('action', 'like', 'Redeemed Reward:%')
+                    ->orWhere('action', 'like', 'Reward Fulfilled: #%');
+            })
+            ->orderByDesc('completed_at')
+            ->orderByDesc('created_at')
+            ->limit(600)
+            ->get();
+
+        $fulfilledRedemptionIds = $rewardLogs
+            ->filter(fn (ActivityLog $log) => str_starts_with((string) $log->action, 'Reward Fulfilled: #'))
+            ->map(function (ActivityLog $log) {
+                if (preg_match('/^Reward Fulfilled: #(\d+)/', (string) $log->action, $matches) !== 1) {
+                    return null;
+                }
+
+                return (int) $matches[1];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $pendingRewardRedemptions = $rewardLogs
+            ->filter(fn (ActivityLog $log) => str_starts_with((string) $log->action, 'Redeemed Reward: '))
+            ->reject(fn (ActivityLog $log) => in_array((int) $log->id, $fulfilledRedemptionIds, true))
+            ->map(function (ActivityLog $log) use ($timezone) {
+                $timestamp = ($log->completed_at ?? $log->created_at)?->copy() ?? now();
+                $timestamp = $timestamp->setTimezone($timezone);
+
+                return [
+                    'id' => (int) $log->id,
+                    'kid_id' => (int) $log->kid_id,
+                    'kid' => (string) ($log->kid?->name ?? 'Unknown'),
+                    'item' => (string) str_replace('Redeemed Reward: ', '', (string) $log->action),
+                    'redeemed_at' => $timestamp->format('M d, h:i A'),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $activeRewards = PointsStoreItem::query()
+            ->where('parent_id', $parent->id)
+            ->where('active', true)
+            ->orderBy('points')
+            ->orderBy('title')
+            ->get();
+
+        $pendingKeys = collect($pendingRewardRedemptions)
+            ->map(fn (array $row) => $row['kid_id'].'|'.$row['item'])
+            ->values()
+            ->all();
+
+        $offeredRewards = $kidModels
+            ->flatMap(function (Kid $kid) use ($activeRewards, $pendingKeys) {
+                return $activeRewards
+                    ->filter(fn (PointsStoreItem $item) => (int) $kid->points >= (int) $item->points)
+                    ->map(function (PointsStoreItem $item) use ($kid, $pendingKeys) {
+                        $key = $kid->id.'|'.$item->title;
+
+                        if (in_array($key, $pendingKeys, true)) {
+                            return null;
+                        }
+
+                        return [
+                            'status' => 'offered',
+                            'kid' => (string) $kid->name,
+                            'item' => (string) $item->title,
+                            'points' => (int) $item->points,
+                            'redeemed_at' => null,
+                            'id' => null,
+                        ];
+                    })
+                    ->filter();
+            })
+            ->values()
+            ->all();
+
+        $redeemedRows = collect($pendingRewardRedemptions)
+            ->map(fn (array $row) => [
+                'status' => 'redeemed',
+                'kid' => $row['kid'],
+                'item' => $row['item'],
+                'points' => null,
+                'redeemed_at' => $row['redeemed_at'],
+                'id' => $row['id'],
+            ])
+            ->values()
+            ->all();
+
+        $this->rewardStatuses = collect($redeemedRows)
+            ->concat($offeredRewards)
+            ->values()
+            ->all();
+
         $logs = ActivityLog::query()
             ->with(['kid', 'task'])
             ->whereHas('kid', fn ($query) => $query->where('parent_id', $parent->id))
@@ -179,6 +283,16 @@ class ParentDashboard extends Component
                 if ($log->action === 'Daily Bonus') {
                     $task = 'Full Day Completion';
                     $action = 'Daily Bonus (+10 pts)';
+                }
+
+                if (str_starts_with((string) $log->action, 'Redeemed Reward: ')) {
+                    $task = str_replace('Redeemed Reward: ', '', (string) $log->action);
+                    $action = 'Reward Redeemed';
+                }
+
+                if (str_starts_with((string) $log->action, 'Reward Fulfilled: #')) {
+                    $task = trim((string) preg_replace('/^Reward Fulfilled: #\d+\s*/', '', (string) $log->action));
+                    $action = 'Reward Fulfilled';
                 }
 
                 if (! $timestamp) {
@@ -240,6 +354,44 @@ class ParentDashboard extends Component
             })
             ->values()
             ->all();
+    }
+
+    public function fulfillRewardRedemption(int $redemptionLogId): void
+    {
+        $redemptionLog = ActivityLog::query()
+            ->with('kid')
+            ->whereKey($redemptionLogId)
+            ->where('action', 'like', 'Redeemed Reward:%')
+            ->first();
+
+        if (! $redemptionLog || (int) ($redemptionLog->kid?->parent_id ?? 0) !== $this->parentId) {
+            $this->dispatch('toast', message: 'Reward redemption not found.', type: 'error');
+
+            return;
+        }
+
+        $alreadyFulfilled = ActivityLog::query()
+            ->where('kid_id', $redemptionLog->kid_id)
+            ->where('action', 'like', 'Reward Fulfilled: #'.$redemptionLog->id.'%')
+            ->exists();
+
+        if ($alreadyFulfilled) {
+            $this->dispatch('toast', message: 'Reward already fulfilled.', type: 'warning');
+
+            return;
+        }
+
+        $itemTitle = str_replace('Redeemed Reward: ', '', (string) $redemptionLog->action);
+
+        ActivityLog::query()->create([
+            'kid_id' => (int) $redemptionLog->kid_id,
+            'task_id' => null,
+            'action' => 'Reward Fulfilled: #'.$redemptionLog->id.' '.$itemTitle,
+            'completed_at' => now(),
+        ]);
+
+        $this->dispatch('toast', message: 'Marked reward as fulfilled.', type: 'success');
+        $this->loadDashboard();
     }
 
     public function updatedActivitySearch(): void
