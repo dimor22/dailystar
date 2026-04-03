@@ -13,9 +13,10 @@ class StreakBonusesManager extends Component
     use WithFileUploads;
 
     private const BONUS_OPTIONS = [
-        'points_increase' => 'Point % increase',
-        'streak_chest' => 'Streak chest',
-        'bigger_celebration' => 'Bigger celebration',
+        '0' => 'Type 0 - No Bonus (modal only)',
+        '1' => 'Type 1 - 10% task points boost',
+        '2' => 'Type 2 - 20% task points boost',
+        '3' => 'Type 3 - 30% task points boost',
     ];
 
     public int $parentId = 0;
@@ -32,7 +33,7 @@ class StreakBonusesManager extends Component
 
     public int $formDayTarget = 3;
 
-    public string $formBonusType = 'points_increase';
+    public string $formBonusType = '0';
 
     public ?int $editingId = null;
 
@@ -57,7 +58,7 @@ class StreakBonusesManager extends Component
             'description' => $validated['formDescription'] ?: null,
             'image_path' => $imagePath,
             'day_target' => $validated['formDayTarget'],
-            'bonus_type' => $validated['formBonusType'],
+            'bonus_type' => (int) $validated['formBonusType'],
         ]);
 
         $this->resetForm();
@@ -75,7 +76,7 @@ class StreakBonusesManager extends Component
         $this->currentImagePath = $bonus->image_path;
         $this->removeCurrentImage = false;
         $this->formDayTarget = (int) $bonus->day_target;
-        $this->formBonusType = (string) $bonus->bonus_type;
+        $this->formBonusType = (string) (int) $bonus->bonus_type;
     }
 
     public function updateBonus(): void
@@ -104,7 +105,7 @@ class StreakBonusesManager extends Component
             'description' => $validated['formDescription'] ?: null,
             'image_path' => $activeImagePath,
             'day_target' => $validated['formDayTarget'],
-            'bonus_type' => $validated['formBonusType'],
+            'bonus_type' => (int) $validated['formBonusType'],
         ]);
 
         $this->resetForm();
@@ -172,7 +173,7 @@ class StreakBonusesManager extends Component
             'formDescription' => ['nullable', 'string', 'max:1000'],
             'formImage' => ['nullable', 'mimetypes:image/jpeg,image/png,image/webp,image/avif', 'mimes:jpeg,jpg,png,webp,avif', 'max:1024'],
             'formDayTarget' => ['required', 'integer', 'min:1', 'max:365'],
-            'formBonusType' => ['required', 'in:points_increase,streak_chest,bigger_celebration'],
+            'formBonusType' => ['required', 'in:0,1,2,3'],
         ];
     }
 
@@ -194,7 +195,7 @@ class StreakBonusesManager extends Component
         $this->currentImagePath = null;
         $this->removeCurrentImage = false;
         $this->formDayTarget = 3;
-        $this->formBonusType = 'points_increase';
+        $this->formBonusType = '0';
         $this->resetErrorBag();
     }
 }

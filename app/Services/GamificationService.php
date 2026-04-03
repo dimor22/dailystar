@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\Streak;
+use App\Models\StreakBonus;
 use App\Models\Task;
 use App\Models\TaskCompletion;
 use Carbon\CarbonInterface;
@@ -17,9 +18,19 @@ class GamificationService
 
     public function completeTask(Kid $kid, Task $task, ?CarbonInterface $timestamp = null): bool
     {
+        return $this->completeTaskWithDetails($kid, $task, $timestamp)['completed'];
+    }
+
+    public function completeTaskWithDetails(Kid $kid, Task $task, ?CarbonInterface $timestamp = null): array
+    {
         $timestamp = $timestamp ? Carbon::instance($timestamp) : now();
         $timestampUtc = $timestamp->copy()->utc();
         $completedDate = $timestamp->toDateString();
+
+        $activeBonusType = $this->resolveActiveStreakBonusType($kid);
+        $bonusPercent = StreakBonus::percentageForType($activeBonusType);
+        $bonusPoints = (int) floor(((int) $task->points * $bonusPercent) / 100);
+        $totalTaskPoints = (int) $task->points + $bonusPoints;
 
         $alreadyCompleted = TaskCompletion::query()
             ->where('kid_id', $kid->id)
@@ -28,7 +39,15 @@ class GamificationService
             ->exists();
 
         if ($alreadyCompleted) {
-            return false;
+            return [
+                'completed' => false,
+                'bonus_type' => $activeBonusType,
+                'bonus_type_key' => StreakBonus::keyForType($activeBonusType),
+                'bonus_percent' => $bonusPercent,
+                'bonus_points' => 0,
+                'task_points' => (int) $task->points,
+                'total_task_points' => 0,
+            ];
         }
 
         TaskCompletion::query()->create([
@@ -38,7 +57,7 @@ class GamificationService
             'completed_at' => $timestampUtc,
         ]);
 
-        $kid->increment('points', $task->points);
+        $kid->increment('points', $totalTaskPoints);
 
         ActivityLog::query()->create([
             'kid_id' => $kid->id,
@@ -51,7 +70,15 @@ class GamificationService
 
         $this->updateStreak($kid, $timestamp->toDateString());
 
-        return true;
+        return [
+            'completed' => true,
+            'bonus_type' => $activeBonusType,
+            'bonus_type_key' => StreakBonus::keyForType($activeBonusType),
+            'bonus_percent' => $bonusPercent,
+            'bonus_points' => $bonusPoints,
+            'task_points' => (int) $task->points,
+            'total_task_points' => $totalTaskPoints,
+        ];
     }
 
     public function starsFromPoints(int $points): int
@@ -132,6 +159,25 @@ class GamificationService
             'action' => 'Daily Bonus',
             'completed_at' => $timestamp->copy()->utc(),
         ]);
+    }
+
+    private function resolveActiveStreakBonusType(Kid $kid): int
+    {
+        $currentStreak = (int) (Streak::query()->where('kid_id', $kid->id)->value('current_streak') ?? 0);
+
+        if ($currentStreak <= 0) {
+            return StreakBonus::TYPE_NO_BONUS;
+        }
+
+        $bonusType = StreakBonus::query()
+            ->where('parent_id', (int) $kid->parent_id)
+            ->where('day_target', '<=', $currentStreak)
+            ->orderByDesc('day_target')
+            ->value('bonus_type');
+
+        return is_numeric($bonusType)
+            ? (int) $bonusType
+            : StreakBonus::TYPE_NO_BONUS;
     }
 
     private function isFullyCompletedTaskDay(Kid $kid, Carbon $date): bool

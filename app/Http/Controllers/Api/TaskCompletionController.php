@@ -57,11 +57,13 @@ class TaskCompletionController extends Controller
             ], 422);
         }
 
-        $completed = $gamificationService->completeTask(
+        $completionResult = $gamificationService->completeTaskWithDetails(
             $kid,
             $task,
             $timestamp
         );
+
+        $completed = (bool) ($completionResult['completed'] ?? false);
 
         if ($completed && $kid->parent) {
             $emailService->sendTaskCompletedNotification($kid->parent, $kid, $task);
@@ -74,6 +76,12 @@ class TaskCompletionController extends Controller
             'points' => $kid->points,
             'stars' => $gamificationService->starsFromPoints($kid->points),
             'streak' => $kid->streak?->current_streak ?? 0,
+            'task_points' => (int) ($completionResult['task_points'] ?? 0),
+            'bonus_type' => (int) ($completionResult['bonus_type'] ?? 0),
+            'bonus_type_key' => (string) ($completionResult['bonus_type_key'] ?? 'no_bonus'),
+            'bonus_percent' => (int) ($completionResult['bonus_percent'] ?? 0),
+            'bonus_points' => (int) ($completionResult['bonus_points'] ?? 0),
+            'total_task_points' => (int) ($completionResult['total_task_points'] ?? 0),
         ]);
     }
 }

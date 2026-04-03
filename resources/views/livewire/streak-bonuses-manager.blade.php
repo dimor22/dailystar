@@ -2,6 +2,7 @@
     <div class="kid-card h-fit lg:sticky lg:top-6">
         <h1 class="kid-title">Streak Bonuses</h1>
         <p class="mt-1 text-slate-600">Create bonuses triggered by streak day targets.</p>
+        <p class="mt-1 text-xs text-slate-500">Type 0 = no bonus (celebration modal only), Type 1 = +10%, Type 2 = +20%, Type 3 = +30% task points.</p>
 
         <form wire:submit="{{ $editingId ? 'updateBonus' : 'createBonus' }}" class="mt-6 grid gap-4 md:grid-cols-2" autocomplete="off">
             <div>
@@ -17,7 +18,7 @@
             </div>
 
             <div class="md:col-span-2">
-                <label class="mb-1 block text-sm font-semibold text-slate-700">Bonus Selector</label>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">Bonus Type</label>
                 <select wire:model.live="formBonusType" class="w-full rounded-xl border border-slate-300 px-3 py-2">
                     @foreach($bonusOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
