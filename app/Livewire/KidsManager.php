@@ -300,7 +300,7 @@ class KidsManager extends Component
                 'kid_id' => $kid->id,
                 'task_id' => $task->id,
                 'action' => 'Reset',
-                'completed_at' => now(),
+                'completed_at' => now('UTC'),
             ]);
 
             $updatedPoints = max(0, ((int) $kid->points) - ($task->points * $deletedCount));

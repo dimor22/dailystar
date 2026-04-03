@@ -49,8 +49,6 @@ class ParentDashboard extends Component
 
     public function loadDashboard(): void
     {
-        $this->dashboardDateTime = now()->format('l, F j • h:i A');
-
         $previousProgressByKid = collect($this->kids)
             ->mapWithKeys(fn (array $kid) => [
                 (int) $kid['id'] => [
@@ -78,9 +76,11 @@ class ParentDashboard extends Component
 
         $this->parentEmail = (string) $parent->email;
         $this->parentTimezone = (string) ($parent->timezone ?: config('app.timezone'));
+        $timezone = $this->resolveDisplayTimezone($this->parentTimezone);
+        $this->dashboardDateTime = now('UTC')->setTimezone($timezone)->format('l, F j • h:i A');
 
         if ($this->timezone === '') {
-            $this->timezone = $this->parentTimezone;
+            $this->timezone = $timezone;
         }
 
         $today = now()->toDateString();
@@ -166,7 +166,7 @@ class ParentDashboard extends Component
             })
             ->all();
 
-        $timezone = $this->parentTimezone !== '' ? $this->parentTimezone : config('app.timezone');
+        $timezone = $this->resolveDisplayTimezone($this->timezone !== '' ? $this->timezone : $this->parentTimezone);
         $search = strtolower(trim($this->activitySearch));
 
         $rewardLogs = ActivityLog::query()
@@ -199,8 +199,7 @@ class ParentDashboard extends Component
             ->filter(fn (ActivityLog $log) => str_starts_with((string) $log->action, 'Redeemed Reward: '))
             ->reject(fn (ActivityLog $log) => in_array((int) $log->id, $fulfilledRedemptionIds, true))
             ->map(function (ActivityLog $log) use ($timezone) {
-                $timestamp = ($log->completed_at ?? $log->created_at)?->copy() ?? now();
-                $timestamp = $timestamp->setTimezone($timezone);
+                $timestamp = $this->displayTimestampFromLog($log, $timezone);
 
                 return [
                     'id' => (int) $log->id,
@@ -275,7 +274,7 @@ class ParentDashboard extends Component
             ->limit(400)
             ->get()
             ->map(function (ActivityLog $log) use ($timezone) {
-                $timestamp = ($log->completed_at ?? $log->created_at)?->copy();
+                $timestamp = $this->displayTimestampFromLog($log, $timezone);
                 $kid = $log->kid?->name ?? 'Unknown';
                 $task = $log->task?->title ?? '-';
                 $action = str_starts_with($log->action, 'completed:') ? 'Completed' : $log->action;
@@ -294,12 +293,6 @@ class ParentDashboard extends Component
                     $task = trim((string) preg_replace('/^Reward Fulfilled: #\d+\s*/', '', (string) $log->action));
                     $action = 'Reward Fulfilled';
                 }
-
-                if (! $timestamp) {
-                    $timestamp = now();
-                }
-
-                $timestamp = $timestamp->setTimezone($timezone);
 
                 return [
                     'kid' => $kid,
@@ -356,6 +349,34 @@ class ParentDashboard extends Component
             ->all();
     }
 
+    private function resolveDisplayTimezone(string $timezone): string
+    {
+        $candidate = trim($timezone);
+
+        if ($candidate !== '' && in_array($candidate, DateTimeZone::listIdentifiers(), true)) {
+            return $candidate;
+        }
+
+        $fallback = (string) config('app.timezone');
+
+        if ($fallback !== '' && in_array($fallback, DateTimeZone::listIdentifiers(), true)) {
+            return $fallback;
+        }
+
+        return 'UTC';
+    }
+
+    private function displayTimestampFromLog(ActivityLog $log, string $timezone): Carbon
+    {
+        $rawTimestamp = $log->getRawOriginal('completed_at') ?: $log->getRawOriginal('created_at');
+
+        if (! is_string($rawTimestamp) || trim($rawTimestamp) === '') {
+            return now('UTC')->setTimezone($timezone);
+        }
+
+        return Carbon::parse($rawTimestamp, 'UTC')->setTimezone($timezone);
+    }
+
     public function fulfillRewardRedemption(int $redemptionLogId): void
     {
         $redemptionLog = ActivityLog::query()
@@ -387,7 +408,7 @@ class ParentDashboard extends Component
             'kid_id' => (int) $redemptionLog->kid_id,
             'task_id' => null,
             'action' => 'Reward Fulfilled: #'.$redemptionLog->id.' '.$itemTitle,
-            'completed_at' => now(),
+            'completed_at' => now('UTC'),
         ]);
 
         $this->dispatch('toast', message: 'Marked reward as fulfilled.', type: 'success');
@@ -426,8 +447,6 @@ class ParentDashboard extends Component
         $parent->save();
 
         session(['parent_timezone' => $parent->timezone]);
-        config(['app.timezone' => $parent->timezone]);
-        date_default_timezone_set($parent->timezone);
 
         $this->parentTimezone = (string) $parent->timezone;
         $this->timezone = (string) $parent->timezone;

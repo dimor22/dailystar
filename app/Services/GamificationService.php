@@ -18,6 +18,7 @@ class GamificationService
     public function completeTask(Kid $kid, Task $task, ?CarbonInterface $timestamp = null): bool
     {
         $timestamp = $timestamp ? Carbon::instance($timestamp) : now();
+        $timestampUtc = $timestamp->copy()->utc();
         $completedDate = $timestamp->toDateString();
 
         $alreadyCompleted = TaskCompletion::query()
@@ -34,7 +35,7 @@ class GamificationService
             'kid_id' => $kid->id,
             'task_id' => $task->id,
             'completed_date' => $completedDate,
-            'completed_at' => $timestamp,
+            'completed_at' => $timestampUtc,
         ]);
 
         $kid->increment('points', $task->points);
@@ -43,7 +44,7 @@ class GamificationService
             'kid_id' => $kid->id,
             'task_id' => $task->id,
             'action' => "Completed",
-            'completed_at' => $timestamp,
+            'completed_at' => $timestampUtc,
         ]);
 
         $this->awardFullDayBonusIfEligible($kid, $timestamp);
@@ -110,10 +111,13 @@ class GamificationService
             return;
         }
 
+        $dayStartUtc = $timestamp->copy()->startOfDay()->utc();
+        $dayEndUtc = $timestamp->copy()->endOfDay()->utc();
+
         $alreadyAwarded = ActivityLog::query()
             ->where('kid_id', $kid->id)
             ->where('action', 'Daily Bonus')
-            ->whereDate('completed_at', $timestamp->toDateString())
+            ->whereBetween('completed_at', [$dayStartUtc, $dayEndUtc])
             ->exists();
 
         if ($alreadyAwarded) {
@@ -126,7 +130,7 @@ class GamificationService
             'kid_id' => $kid->id,
             'task_id' => null,
             'action' => 'Daily Bonus',
-            'completed_at' => $timestamp,
+            'completed_at' => $timestamp->copy()->utc(),
         ]);
     }
 

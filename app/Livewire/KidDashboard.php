@@ -348,7 +348,7 @@ class KidDashboard extends Component
                 'kid_id' => $lockedKid->id,
                 'task_id' => null,
                 'action' => 'Redeemed Reward: '.$reward->title,
-                'completed_at' => now(),
+                'completed_at' => now('UTC'),
             ]);
 
             $didRedeem = true;
