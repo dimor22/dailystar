@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\ParentRewardsProvisioningService;
 use App\Models\User;
 use DateTimeZone;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +37,8 @@ class ParentRegister extends Component
             'role' => 'parent',
             'timezone' => $validated['timezone'],
         ]);
+
+        app(ParentRewardsProvisioningService::class)->provisionDefaults($parent);
 
         session(['parent_user_id' => $parent->id]);
         session(['parent_timezone' => $parent->timezone]);
