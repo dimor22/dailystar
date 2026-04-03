@@ -2,6 +2,9 @@
     class="space-y-6"
     wire:poll.20s="loadDashboard"
     x-data="{
+        rewardUnlockedCelebrationOpen: false,
+        rewardUnlockedCelebrationTitle: '',
+        rewardUnlockedCelebrationPoints: 0,
         redeemCelebrationOpen: false,
         redeemCelebrationTitle: '',
         redeemCelebrationPoints: 0,
@@ -41,10 +44,21 @@
         },
         launchRedeemCelebration(detail) {
             const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.rewardUnlockedCelebrationOpen = false;
             this.badgeCelebrationOpen = false;
             this.redeemCelebrationTitle = payload?.title ?? 'Reward';
             this.redeemCelebrationPoints = Number(payload?.points ?? 0);
             this.redeemCelebrationOpen = true;
+            this.launchConfetti();
+        },
+        launchRewardUnlockedCelebration(detail) {
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.redeemCelebrationOpen = false;
+            this.badgeCelebrationOpen = false;
+            this.streakCelebrationOpen = false;
+            this.rewardUnlockedCelebrationTitle = payload?.title ?? 'Reward';
+            this.rewardUnlockedCelebrationPoints = Number(payload?.points ?? 0);
+            this.rewardUnlockedCelebrationOpen = true;
             this.launchConfetti();
         },
         launchBadgeCelebration(detail) {
@@ -68,6 +82,10 @@
             this.redeemCelebrationOpen = false;
             this.confettiPieces = [];
         },
+        closeRewardUnlockedCelebration() {
+            this.rewardUnlockedCelebrationOpen = false;
+            this.confettiPieces = [];
+        },
         closeBadgeCelebration() {
             this.badgeCelebrationOpen = false;
             this.confettiPieces = [];
@@ -77,10 +95,11 @@
             this.confettiPieces = [];
         },
     }"
+    x-on:points-reward-unlocked.window="launchRewardUnlockedCelebration($event.detail)"
     x-on:reward-redeemed.window="launchRedeemCelebration($event.detail)"
     x-on:badge-unlocked.window="launchBadgeCelebration($event.detail)"
     x-on:streak-reached.window="launchStreakCelebration($event.detail)"
-    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration(); if (streakCelebrationOpen) closeStreakCelebration()"
+    @keydown.escape.window="if (rewardUnlockedCelebrationOpen) closeRewardUnlockedCelebration(); if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration(); if (streakCelebrationOpen) closeStreakCelebration()"
 >
     <div class="grid gap-4 lg:grid-cols-3">
         @php
@@ -353,6 +372,33 @@
                 `"
             ></span>
         </template>
+    </div>
+
+    <div
+        x-show="rewardUnlockedCelebrationOpen"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="closeRewardUnlockedCelebration()"
+    >
+        <div class="kid-card w-full max-w-md text-center">
+            <p class="text-5xl">🎁</p>
+            <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">New Reward Unlocked!</h2>
+            <p class="mt-2 text-lg font-semibold text-slate-700">
+                <span class="text-emerald-600" x-text="rewardUnlockedCelebrationTitle"></span>
+                is now available in your reward shop.
+            </p>
+            <p class="mt-1 text-sm text-slate-500">
+                You reached <span class="font-bold" x-text="rewardUnlockedCelebrationPoints"></span> points. Go redeem it!
+            </p>
+
+            <button
+                type="button"
+                class="kid-btn kid-btn-success mt-5 w-full"
+                @click="closeRewardUnlockedCelebration()"
+            >
+                Let's Go!
+            </button>
+        </div>
     </div>
 
     <div

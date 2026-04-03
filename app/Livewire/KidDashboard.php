@@ -68,6 +68,8 @@ class KidDashboard extends Component
 
     public array $announcedBadgeIds = [];
 
+    public array $announcedAffordableRewardIds = [];
+
     public int $announcedStreakDays = 0;
 
     public function mount(?int $kidId = null): void
@@ -207,13 +209,15 @@ class KidDashboard extends Component
             'can_afford' => $this->points >= $nextPointsItemModel->points,
         ] : [];
 
-        $this->redeemablePointsItems = PointsStoreItem::query()
+        $redeemableItems = PointsStoreItem::query()
             ->where('parent_id', $parentId)
             ->where('active', true)
             ->where('points', '<=', $this->points)
             ->orderByDesc('points')
             ->orderBy('title')
-            ->get()
+            ->get();
+
+        $this->redeemablePointsItems = $redeemableItems
             ->map(fn (PointsStoreItem $item) => [
                 'id' => (int) $item->id,
                 'title' => (string) $item->title,
@@ -223,6 +227,28 @@ class KidDashboard extends Component
             ])
             ->values()
             ->all();
+
+        $affordableRewardIds = $redeemableItems
+            ->map(fn (PointsStoreItem $item) => (int) $item->id)
+            ->values()
+            ->all();
+
+        if (! $this->hasLoadedOnce) {
+            $this->announcedAffordableRewardIds = $affordableRewardIds;
+        } else {
+            $newlyAffordableReward = $redeemableItems
+                ->first(fn (PointsStoreItem $item) => ! in_array((int) $item->id, $this->announcedAffordableRewardIds, true));
+
+            if ($newlyAffordableReward) {
+                $this->dispatch(
+                    'points-reward-unlocked',
+                    title: (string) $newlyAffordableReward->title,
+                    points: (int) $newlyAffordableReward->points
+                );
+            }
+
+            $this->announcedAffordableRewardIds = $affordableRewardIds;
+        }
 
         $nextStarRewardModel = StarReward::query()
             ->where('parent_id', $parentId)
