@@ -139,6 +139,26 @@
 		@apply rounded-2xl bg-white p-6 shadow-md;
 	}
 
+	.reward-confetti-piece {
+		position: absolute;
+		top: -12vh;
+		opacity: 0.95;
+		animation-name: reward-confetti-fall;
+		animation-timing-function: linear;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes reward-confetti-fall {
+		0% {
+			transform: translate3d(0, -12vh, 0) rotate(0deg);
+		}
+
+		100% {
+			transform: translate3d(var(--reward-confetti-drift, 0px), 115vh, 0) rotate(760deg);
+			opacity: 1;
+		}
+	}
+
 	.kid-btn {
 		@apply rounded-2xl px-6 py-4 text-kid-xl font-bold text-white transition hover:opacity-90;
 	}

@@ -302,7 +302,7 @@ class KidDashboard extends Component
             return;
         }
 
-        $this->dispatch('toast', message: 'Reward redeemed: '.$reward->title, type: 'success');
+        $this->dispatch('reward-redeemed', title: $reward->title, points: (int) $reward->points);
         $this->loadDashboard();
     }
 

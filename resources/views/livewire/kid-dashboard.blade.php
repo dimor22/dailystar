@@ -1,4 +1,52 @@
-<div class="space-y-6" wire:poll.20s="loadDashboard">
+<div
+    class="space-y-6"
+    wire:poll.20s="loadDashboard"
+    x-data="{
+        redeemCelebrationOpen: false,
+        redeemCelebrationTitle: '',
+        redeemCelebrationPoints: 0,
+        confettiPieces: [],
+        confettiWave: 0,
+        launchRedeemCelebration(detail) {
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.redeemCelebrationTitle = payload?.title ?? 'Reward';
+            this.redeemCelebrationPoints = Number(payload?.points ?? 0);
+            this.confettiWave += 1;
+
+            const colors = ['#22c55e', '#f97316', '#3b82f6', '#eab308', '#ef4444', '#14b8a6', '#a855f7'];
+            const wave = this.confettiWave;
+
+            this.confettiPieces = Array.from({ length: 80 }, (_, index) => {
+                const size = 8 + Math.random() * 10;
+
+                return {
+                    id: `${wave}-${index}`,
+                    left: Math.random() * 100,
+                    size,
+                    drift: (Math.random() * 140) - 70,
+                    duration: 2800 + Math.random() * 2200,
+                    delay: Math.random() * 350,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    radius: Math.floor(Math.random() * 40),
+                };
+            });
+
+            this.redeemCelebrationOpen = true;
+
+            setTimeout(() => {
+                if (this.confettiWave === wave) {
+                    this.confettiPieces = [];
+                }
+            }, 5600);
+        },
+        closeRedeemCelebration() {
+            this.redeemCelebrationOpen = false;
+            this.confettiPieces = [];
+        },
+    }"
+    x-on:reward-redeemed.window="launchRedeemCelebration($event.detail)"
+    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration()"
+>
     <div class="grid gap-4 lg:grid-cols-3">
         @php
             $cardGradientColor = match ($kidColor ?? 'bg-blue-500') {
@@ -241,4 +289,48 @@
     </div>
 
     <livewire:celebration-modal :show="$showCelebration" :kidId="$kidId" :currentDate="$currentDate" :key="'celebration-'.$kidId.'-'.$currentDate.'-'.($showCelebration ? '1' : '0')" />
+
+    <div class="pointer-events-none fixed inset-0 z-[95] overflow-hidden" aria-hidden="true">
+        <template x-for="piece in confettiPieces" :key="piece.id">
+            <span
+                class="reward-confetti-piece"
+                :style="`
+                    left: ${piece.left}%;
+                    width: ${piece.size}px;
+                    height: ${Math.max(6, piece.size * 0.55)}px;
+                    background: ${piece.color};
+                    border-radius: ${piece.radius}%;
+                    --reward-confetti-drift: ${piece.drift}px;
+                    animation-duration: ${piece.duration}ms;
+                    animation-delay: ${piece.delay}ms;
+                `"
+            ></span>
+        </template>
+    </div>
+
+    <div
+        x-show="redeemCelebrationOpen"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="closeRedeemCelebration()"
+    >
+        <div class="kid-card w-full max-w-md text-center">
+            <p class="text-5xl">🎉</p>
+            <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">Reward Redeemed!</h2>
+            <p class="mt-2 text-lg font-semibold text-slate-700">
+                You unlocked <span class="text-emerald-600" x-text="redeemCelebrationTitle"></span>
+            </p>
+            <p class="mt-1 text-sm text-slate-500">
+                <span x-text="redeemCelebrationPoints"></span> points spent. Nice work!
+            </p>
+
+            <button
+                type="button"
+                class="kid-btn kid-btn-success mt-5 w-full"
+                @click="closeRedeemCelebration()"
+            >
+                Awesome!
+            </button>
+        </div>
+    </div>
 </div>
