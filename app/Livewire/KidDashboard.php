@@ -12,6 +12,7 @@ use App\Models\TaskCompletion;
 use App\Services\GamificationService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -62,6 +63,8 @@ class KidDashboard extends Component
     public array $nextStreakBonus = [];
 
     public array $starBadges = [];
+
+    public array $announcedBadgeIds = [];
 
     public function mount(?int $kidId = null): void
     {
@@ -220,13 +223,16 @@ class KidDashboard extends Component
             'image_path' => $nextStreakBonusModel->image_path,
         ] : [];
 
-        $this->starBadges = StarReward::query()
+        $starBadgeModels = StarReward::query()
             ->where('parent_id', $parentId)
             ->where('active', true)
             ->orderBy('order_number')
             ->orderBy('stars_needed')
-            ->get()
+            ->get();
+
+        $this->starBadges = $starBadgeModels
             ->map(fn (StarReward $reward) => [
+                'id' => (int) $reward->id,
                 'title' => $reward->title,
                 'stars_needed' => (int) $reward->stars_needed,
                 'image_path' => $reward->image_path,
@@ -234,6 +240,31 @@ class KidDashboard extends Component
             ])
             ->values()
             ->all();
+
+        $earnedBadges = $starBadgeModels
+            ->filter(fn (StarReward $reward) => $this->stars >= (int) $reward->stars_needed)
+            ->values();
+
+        $earnedBadgeIds = $earnedBadges
+            ->map(fn (StarReward $reward) => (int) $reward->id)
+            ->all();
+
+        if (! $this->hasLoadedOnce) {
+            $this->announcedBadgeIds = $earnedBadgeIds;
+        } else {
+            $newlyUnlockedBadge = $earnedBadges
+                ->first(fn (StarReward $reward) => ! in_array((int) $reward->id, $this->announcedBadgeIds, true));
+
+            if ($newlyUnlockedBadge) {
+                $this->dispatch(
+                    'badge-unlocked',
+                    title: (string) $newlyUnlockedBadge->title,
+                    image_url: $newlyUnlockedBadge->image_path ? Storage::url($newlyUnlockedBadge->image_path) : null
+                );
+            }
+
+            $this->announcedBadgeIds = $earnedBadgeIds;
+        }
 
         $allTasksDone = $this->taskCount > 0 && $this->completedCount === $this->taskCount;
         $dismissedDate = (string) session("celebration_dismissed.{$kid->id}");

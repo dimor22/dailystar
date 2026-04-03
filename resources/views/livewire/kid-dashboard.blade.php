@@ -5,12 +5,12 @@
         redeemCelebrationOpen: false,
         redeemCelebrationTitle: '',
         redeemCelebrationPoints: 0,
+        badgeCelebrationOpen: false,
+        badgeCelebrationTitle: '',
+        badgeCelebrationImageUrl: null,
         confettiPieces: [],
         confettiWave: 0,
-        launchRedeemCelebration(detail) {
-            const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.redeemCelebrationTitle = payload?.title ?? 'Reward';
-            this.redeemCelebrationPoints = Number(payload?.points ?? 0);
+        launchConfetti() {
             this.confettiWave += 1;
 
             const colors = ['#22c55e', '#f97316', '#3b82f6', '#eab308', '#ef4444', '#14b8a6', '#a855f7'];
@@ -31,21 +31,40 @@
                 };
             });
 
-            this.redeemCelebrationOpen = true;
-
             setTimeout(() => {
                 if (this.confettiWave === wave) {
                     this.confettiPieces = [];
                 }
             }, 5600);
         },
+        launchRedeemCelebration(detail) {
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.badgeCelebrationOpen = false;
+            this.redeemCelebrationTitle = payload?.title ?? 'Reward';
+            this.redeemCelebrationPoints = Number(payload?.points ?? 0);
+            this.redeemCelebrationOpen = true;
+            this.launchConfetti();
+        },
+        launchBadgeCelebration(detail) {
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.redeemCelebrationOpen = false;
+            this.badgeCelebrationTitle = payload?.title ?? 'New Badge';
+            this.badgeCelebrationImageUrl = payload?.image_url ?? null;
+            this.badgeCelebrationOpen = true;
+            this.launchConfetti();
+        },
         closeRedeemCelebration() {
             this.redeemCelebrationOpen = false;
             this.confettiPieces = [];
         },
+        closeBadgeCelebration() {
+            this.badgeCelebrationOpen = false;
+            this.confettiPieces = [];
+        },
     }"
     x-on:reward-redeemed.window="launchRedeemCelebration($event.detail)"
-    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration()"
+    x-on:badge-unlocked.window="launchBadgeCelebration($event.detail)"
+    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration()"
 >
     <div class="grid gap-4 lg:grid-cols-3">
         @php
@@ -330,6 +349,37 @@
                 @click="closeRedeemCelebration()"
             >
                 Awesome!
+            </button>
+        </div>
+    </div>
+
+    <div
+        x-show="badgeCelebrationOpen"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="closeBadgeCelebration()"
+    >
+        <div class="kid-card w-full max-w-md text-center">
+            <p class="text-5xl">⭐</p>
+            <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">New Badge Unlocked!</h2>
+
+            <div class="mx-auto mt-4 flex h-44 w-44 items-center justify-center overflow-hidden rounded-3xl bg-yellow-50 shadow-inner">
+                <template x-if="badgeCelebrationImageUrl">
+                    <img :src="badgeCelebrationImageUrl" alt="Unlocked badge" class="h-full w-full object-cover" />
+                </template>
+                <template x-if="!badgeCelebrationImageUrl">
+                    <span class="text-7xl">⭐</span>
+                </template>
+            </div>
+
+            <p class="mt-4 text-lg font-semibold text-slate-700" x-text="badgeCelebrationTitle"></p>
+
+            <button
+                type="button"
+                class="kid-btn kid-btn-success mt-5 w-full"
+                @click="closeBadgeCelebration()"
+            >
+                So Cool!
             </button>
         </div>
     </div>
