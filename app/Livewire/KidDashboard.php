@@ -42,6 +42,8 @@ class KidDashboard extends Component
 
     public int $currentStreak = 0;
 
+    public ?string $currentStreakImage = null;
+
     public int $completedCount = 0;
 
     public int $taskCount = 0;
@@ -65,6 +67,8 @@ class KidDashboard extends Component
     public array $starBadges = [];
 
     public array $announcedBadgeIds = [];
+
+    public int $announcedStreakDays = 0;
 
     public function mount(?int $kidId = null): void
     {
@@ -157,7 +161,31 @@ class KidDashboard extends Component
         $this->taskCount = count($this->tasks);
         $this->completedCount = count(array_filter($this->tasks, fn (array $task) => $task['completed']));
 
+        if (! $this->hasLoadedOnce) {
+            $this->announcedStreakDays = $this->currentStreak;
+        } else {
+            if ($this->currentStreak < $this->announcedStreakDays) {
+                $this->announcedStreakDays = $this->currentStreak;
+            }
+
+            if ($this->currentStreak > $this->announcedStreakDays) {
+                $this->dispatch('streak-reached', days: $this->currentStreak);
+                $this->announcedStreakDays = $this->currentStreak;
+            }
+        }
+
         $parentId = $kid->parent_id;
+
+        $currentStreakImagePath = StreakBonus::query()
+            ->where('parent_id', $parentId)
+            ->where('day_target', '<=', $this->currentStreak)
+            ->whereNotNull('image_path')
+            ->orderByDesc('day_target')
+            ->value('image_path');
+
+        $this->currentStreakImage = $currentStreakImagePath
+            ? Storage::url($currentStreakImagePath)
+            : null;
 
         $nextPointsItemModel = PointsStoreItem::query()
             ->where('parent_id', $parentId)

@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Kid;
+use App\Models\StreakBonus;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -109,10 +111,27 @@ class KidSelector extends Component
 
     public function render()
     {
+        $kids = $this->ownedKids()
+            ->with('streak')
+            ->orderBy('name')
+            ->get();
+
+        $selectedKid = $kids->firstWhere('id', $this->selectedKidId);
+        $currentStreak = (int) ($selectedKid?->streak?->current_streak ?? 0);
+
+        $currentStreakImage = StreakBonus::query()
+            ->where('parent_id', (int) ($selectedKid?->parent_id ?? 0))
+            ->where('day_target', '<=', $currentStreak)
+            ->whereNotNull('image_path')
+            ->orderByDesc('day_target')
+            ->value('image_path');
+
         return view('livewire.kid-selector', [
             'missionsDateTime' => now()->format('l, F j • h:i A'),
             'parentMissing' => $this->parentId <= 0 && $this->sharedKidId <= 0,
-            'kids' => $this->ownedKids()->orderBy('name')->get(),
+            'kids' => $kids,
+            'currentStreak' => $currentStreak,
+            'currentStreakImage' => $currentStreakImage ? Storage::url($currentStreakImage) : null,
         ]);
     }
 }

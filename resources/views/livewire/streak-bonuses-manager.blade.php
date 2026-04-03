@@ -63,7 +63,7 @@
             @forelse($bonuses as $bonus)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     @if($bonus->image_path)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($bonus->image_path) }}" alt="{{ $bonus->title }} image" class="mb-3 h-24 w-24 rounded-xl object-cover bg-slate-100 p-1" />
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($bonus->image_path) }}" alt="{{ $bonus->title }} image" class="mb-3 h-24 w-24 object-coverp-1" />
                     @endif
                     <div class="flex items-start justify-between gap-3">
                         <h3 class="text-lg font-bold text-slate-800">{{ $bonus->title }}</h3>

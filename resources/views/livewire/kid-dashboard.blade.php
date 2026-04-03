@@ -8,6 +8,8 @@
         badgeCelebrationOpen: false,
         badgeCelebrationTitle: '',
         badgeCelebrationImageUrl: null,
+        streakCelebrationOpen: false,
+        streakCelebrationDays: 0,
         confettiPieces: [],
         confettiWave: 0,
         launchConfetti() {
@@ -48,9 +50,18 @@
         launchBadgeCelebration(detail) {
             const payload = Array.isArray(detail) ? detail[0] : detail;
             this.redeemCelebrationOpen = false;
+            this.streakCelebrationOpen = false;
             this.badgeCelebrationTitle = payload?.title ?? 'New Badge';
             this.badgeCelebrationImageUrl = payload?.image_url ?? null;
             this.badgeCelebrationOpen = true;
+            this.launchConfetti();
+        },
+        launchStreakCelebration(detail) {
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            this.redeemCelebrationOpen = false;
+            this.badgeCelebrationOpen = false;
+            this.streakCelebrationDays = Number(payload?.days ?? 0);
+            this.streakCelebrationOpen = true;
             this.launchConfetti();
         },
         closeRedeemCelebration() {
@@ -61,10 +72,15 @@
             this.badgeCelebrationOpen = false;
             this.confettiPieces = [];
         },
+        closeStreakCelebration() {
+            this.streakCelebrationOpen = false;
+            this.confettiPieces = [];
+        },
     }"
     x-on:reward-redeemed.window="launchRedeemCelebration($event.detail)"
     x-on:badge-unlocked.window="launchBadgeCelebration($event.detail)"
-    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration()"
+    x-on:streak-reached.window="launchStreakCelebration($event.detail)"
+    @keydown.escape.window="if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration(); if (streakCelebrationOpen) closeStreakCelebration()"
 >
     <div class="grid gap-4 lg:grid-cols-3">
         @php
@@ -86,21 +102,33 @@
             ></div>
 
             <div class="relative z-10">
-                @if($kidAvatarDisplayMode === 'image' && $kidAvatarImagePath)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($kidAvatarImagePath) }}" alt="{{ $kidName }} avatar" class="mt-3 h-20 w-20 rounded-full object-cover bg-white p-1" />
-                @else
-                    <div class="mt-3 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-5xl">{{ $kidAvatar }}</div>
-                @endif
+                <div class="relative">
+                    @if($kidAvatarDisplayMode === 'image' && $kidAvatarImagePath)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($kidAvatarImagePath) }}" alt="{{ $kidName }} avatar" class="mt-3 h-[8rem] w-[8rem] rounded-full object-cover bg-white p-1" />
+                    @else
+                        <div class="mt-3 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-5xl">{{ $kidAvatar }}</div>
+                    @endif
+
+                    @if(!empty($currentStreakImage))
+                        <img src="{{ $currentStreakImage }}" alt="Current streak image" class="h-20 w-20 absolute left-[4.5rem] top-[43px]" />
+                    @else
+                        🔥
+                    @endif
+                </div>
+
                 <p class="kid-title">{{ $kidName }}</p>
                 <p class="text-sm text-slate-500">Timezone: {{ config('app.timezone') }}</p>
+
+
             </div>
 
             <div class="relative z-10">
                 <div class="">
                     <p class="text-lg font-bold text-slate-700">Points: {{ $points }}</p>
                     <p class="text-lg font-bold text-slate-700">Stars: {{ $stars }} ⭐</p>
-                    <p class="text-lg font-bold text-slate-700">Streak: {{ $currentStreak }} 🔥</p>
                 </div>
+
+
 
                 <div class="mt-4">
                     <x-progress-bar :current="$completedCount" :total="$taskCount" />
@@ -209,7 +237,7 @@
             {{-- Slide 2: Streak Goal --}}
             <div x-show="slide === 2" x-transition.opacity class="absolute inset-0">
                 <div class="flex items-start gap-4">
-                    <div class="shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 overflow-hidden text-4xl">
+                    <div class="shrink-0 flex h-16 w-16 items-center justify-center overflow-hidden text-4xl">
                         @if(!empty($nextStreakBonus['image_path']))
                             <img src="{{ \Illuminate\Support\Facades\Storage::url($nextStreakBonus['image_path']) }}" alt="{{ $nextStreakBonus['title'] }}" class="h-full w-full object-cover">
                         @else
@@ -380,6 +408,35 @@
                 @click="closeBadgeCelebration()"
             >
                 So Cool!
+            </button>
+        </div>
+    </div>
+
+    <div
+        x-show="streakCelebrationOpen"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="closeStreakCelebration()"
+    >
+        <div class="kid-card w-full max-w-md text-center">
+            <p class="text-5xl">🔥</p>
+            <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">Streak Level Up!</h2>
+
+            <div class="mx-auto mt-4 flex h-44 w-44 items-center justify-center rounded-3xl bg-orange-50 shadow-inner">
+                <div class="text-center">
+                    <p class="text-7xl leading-none">🔥</p>
+                    <p class="mt-2 text-2xl font-extrabold text-orange-700" x-text="`${streakCelebrationDays} days`"></p>
+                </div>
+            </div>
+
+            <p class="mt-4 text-lg font-semibold text-slate-700">Amazing consistency. Keep it going!</p>
+
+            <button
+                type="button"
+                class="kid-btn kid-btn-success mt-5 w-full"
+                @click="closeStreakCelebration()"
+            >
+                Keep Going!
             </button>
         </div>
     </div>
