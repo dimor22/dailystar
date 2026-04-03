@@ -12,7 +12,7 @@ class PointsStoreItemSeeder extends Seeder
     {
         $parent = User::query()
             ->where('role', 'parent')
-            ->where('email', 'parent@dailystars.app')
+            ->whereIn('email', ['parent@dailystars.app', 'dimor22@gmail.com'])
             ->first();
 
         if (! $parent) {
