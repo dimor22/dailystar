@@ -206,7 +206,7 @@
             <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                 <h3 class="text-kid-xl font-bold text-slate-800">Edit Points & Stars</h3>
                 <p class="mt-1 text-sm text-slate-500">{{ $editingRewardsKidName }}</p>
-                <p class="mt-1 text-xs text-slate-500">Stars are derived from points at 100 points per star.</p>
+                <p class="mt-1 text-xs text-slate-500">You can update points, stars, and current streak days independently.</p>
 
                 <div class="mt-4 grid gap-4">
                     <div>
@@ -219,6 +219,12 @@
                         <label class="mb-1 block text-sm font-semibold text-slate-700">Stars</label>
                         <input wire:model.live="formRewardStars" type="number" min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
                         @error('formRewardStars') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-semibold text-slate-700">Streak Days</label>
+                        <input wire:model.live="formRewardStreakDays" type="number" min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                        @error('formRewardStreakDays') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 

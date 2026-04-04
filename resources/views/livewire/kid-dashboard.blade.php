@@ -130,8 +130,6 @@
 
                     @if(!empty($currentStreakImage))
                         <img src="{{ $currentStreakImage }}" alt="Current streak image" class="h-20 w-20 absolute left-[4.5rem] top-[43px]" />
-                    @else
-                        🔥
                     @endif
                 </div>
 

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\ActivityLog;
 use App\Models\Kid;
 use App\Models\KidTask;
+use App\Models\Streak;
 use App\Models\Task;
 use App\Models\TaskCompletion;
 use Illuminate\Http\UploadedFile;
@@ -68,6 +69,8 @@ class KidsManager extends Component
     public int $formRewardPoints = 0;
 
     public int $formRewardStars = 0;
+
+    public int $formRewardStreakDays = 0;
 
     public function mount(): void
     {
@@ -367,11 +370,13 @@ class KidsManager extends Component
     public function openRewardsEditor(int $kidId): void
     {
         $kid = $this->ownedKids()->findOrFail($kidId);
+        $currentStreak = (int) (Streak::query()->where('kid_id', $kid->id)->value('current_streak') ?? 0);
 
         $this->editingRewardsKidId = (int) $kid->id;
         $this->editingRewardsKidName = (string) $kid->name;
         $this->formRewardPoints = (int) $kid->points;
         $this->formRewardStars = (int) $kid->stars;
+        $this->formRewardStreakDays = $currentStreak;
         $this->resetErrorBag();
     }
 
@@ -384,6 +389,7 @@ class KidsManager extends Component
         $validated = $this->validate([
             'formRewardPoints' => ['required', 'integer', 'min:0', 'max:1000000'],
             'formRewardStars' => ['required', 'integer', 'min:0', 'max:10000'],
+            'formRewardStreakDays' => ['required', 'integer', 'min:0', 'max:3650'],
         ]);
 
         $kid = $this->ownedKids()->findOrFail($this->editingRewardsKidId);
@@ -392,8 +398,25 @@ class KidsManager extends Component
             'stars' => (int) $validated['formRewardStars'],
         ]);
 
+        $streak = Streak::query()->firstOrCreate(
+            ['kid_id' => $kid->id],
+            [
+                'current_streak' => 0,
+                'longest_streak' => 0,
+                'last_completed_date' => null,
+            ]
+        );
+
+        $newStreakDays = (int) $validated['formRewardStreakDays'];
+        $streak->current_streak = $newStreakDays;
+        $streak->longest_streak = max((int) $streak->longest_streak, $newStreakDays);
+        $streak->last_completed_date = $newStreakDays > 0
+            ? ($streak->last_completed_date ?: now()->toDateString())
+            : null;
+        $streak->save();
+
         $this->closeRewardsEditor();
-        $this->dispatch('toast', message: 'Kid points/stars updated.', type: 'success');
+        $this->dispatch('toast', message: 'Kid points/stars/streak updated.', type: 'success');
     }
 
     public function closeRewardsEditor(): void
@@ -402,6 +425,7 @@ class KidsManager extends Component
         $this->editingRewardsKidName = '';
         $this->formRewardPoints = 0;
         $this->formRewardStars = 0;
+        $this->formRewardStreakDays = 0;
         $this->resetErrorBag();
     }
 
