@@ -57,7 +57,7 @@ class GamificationService
             'completed_at' => $timestampUtc,
         ]);
 
-        $kid->increment('points', $totalTaskPoints);
+        $this->addPointsAndProgressStars($kid, $totalTaskPoints);
 
         ActivityLog::query()->create([
             'kid_id' => $kid->id,
@@ -151,7 +151,7 @@ class GamificationService
             return;
         }
 
-        $kid->increment('points', self::FULL_DAY_BONUS_POINTS);
+        $this->addPointsAndProgressStars($kid, self::FULL_DAY_BONUS_POINTS);
 
         ActivityLog::query()->create([
             'kid_id' => $kid->id,
@@ -178,6 +178,28 @@ class GamificationService
         return is_numeric($bonusType)
             ? (int) $bonusType
             : StreakBonus::TYPE_NO_BONUS;
+    }
+
+    private function addPointsAndProgressStars(Kid $kid, int $pointsToAdd): void
+    {
+        if ($pointsToAdd <= 0) {
+            return;
+        }
+
+        $oldPoints = (int) $kid->points;
+        $newPoints = $oldPoints + $pointsToAdd;
+
+        $oldStarsFromPoints = $this->starsFromPoints($oldPoints);
+        $newStarsFromPoints = $this->starsFromPoints($newPoints);
+        $starsToAdd = max(0, $newStarsFromPoints - $oldStarsFromPoints);
+
+        $kid->points = $newPoints;
+
+        if ($starsToAdd > 0) {
+            $kid->stars = (int) $kid->stars + $starsToAdd;
+        }
+
+        $kid->save();
     }
 
     private function isFullyCompletedTaskDay(Kid $kid, Carbon $date): bool

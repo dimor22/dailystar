@@ -74,7 +74,7 @@ class TaskCompletionController extends Controller
         return response()->json([
             'success' => $completed,
             'points' => $kid->points,
-            'stars' => $gamificationService->starsFromPoints($kid->points),
+            'stars' => (int) $kid->stars,
             'streak' => $kid->streak?->current_streak ?? 0,
             'task_points' => (int) ($completionResult['task_points'] ?? 0),
             'bonus_type' => (int) ($completionResult['bonus_type'] ?? 0),

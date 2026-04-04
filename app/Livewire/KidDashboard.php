@@ -158,7 +158,7 @@ class KidDashboard extends Component
         $this->kidAvatarImagePath = $kid->avatar_image_path;
         $this->kidColor = (string) ($kid->color ?: 'bg-blue-500');
         $this->points = (int) $kid->points;
-        $this->stars = app(GamificationService::class)->starsFromPoints($this->points);
+        $this->stars = (int) $kid->stars;
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);
         $this->taskCount = count($this->tasks);
         $this->completedCount = count(array_filter($this->tasks, fn (array $task) => $task['completed']));

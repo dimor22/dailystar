@@ -8,7 +8,6 @@ use App\Models\KidTask;
 use App\Models\PointsStoreItem;
 use App\Models\TaskCompletion;
 use App\Models\User;
-use App\Services\GamificationService;
 use DateTimeZone;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
@@ -85,8 +84,6 @@ class ParentDashboard extends Component
 
         $today = now()->toDateString();
         $todayWeekday = strtolower(now()->format('l'));
-        $gamificationService = app(GamificationService::class);
-
         $kidModels = Kid::query()
             ->with(['tasks', 'streak'])
             ->where('parent_id', $parent->id)
@@ -94,7 +91,7 @@ class ParentDashboard extends Component
             ->get();
 
         $this->kids = $kidModels
-            ->map(function (Kid $kid) use ($today, $todayWeekday, $gamificationService, $previousProgressByKid) {
+            ->map(function (Kid $kid) use ($today, $todayWeekday, $previousProgressByKid) {
                 $visibleTasks = KidTask::query()
                     ->with('task:id,title')
                     ->where('kid_id', $kid->id)
@@ -155,7 +152,7 @@ class ParentDashboard extends Component
                     'avatar_image_path' => $kid->avatar_image_path,
                     'color' => $kid->color,
                     'points' => $kid->points,
-                    'stars' => $gamificationService->starsFromPoints((int) $kid->points),
+                    'stars' => (int) $kid->stars,
                     'completed' => $completedTasks,
                     'total' => $totalTasks,
                     'just_updated' => $justUpdated,

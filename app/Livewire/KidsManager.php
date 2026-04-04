@@ -61,6 +61,14 @@ class KidsManager extends Component
 
     public ?int $editingKidId = null;
 
+    public ?int $editingRewardsKidId = null;
+
+    public string $editingRewardsKidName = '';
+
+    public int $formRewardPoints = 0;
+
+    public int $formRewardStars = 0;
+
     public function mount(): void
     {
         $this->parentId = (int) session('parent_user_id');
@@ -91,6 +99,7 @@ class KidsManager extends Component
             'color' => $validated['formColor'],
             'pin' => $validated['formPin'],
             'points' => 0,
+            'stars' => 0,
         ]);
 
         $this->resetForm();
@@ -353,6 +362,47 @@ class KidsManager extends Component
         session()->put('kid_id', $kidId);
 
         $this->redirect(route('kid.login'));
+    }
+
+    public function openRewardsEditor(int $kidId): void
+    {
+        $kid = $this->ownedKids()->findOrFail($kidId);
+
+        $this->editingRewardsKidId = (int) $kid->id;
+        $this->editingRewardsKidName = (string) $kid->name;
+        $this->formRewardPoints = (int) $kid->points;
+        $this->formRewardStars = (int) $kid->stars;
+        $this->resetErrorBag();
+    }
+
+    public function saveRewardsEditor(): void
+    {
+        if (! $this->editingRewardsKidId) {
+            return;
+        }
+
+        $validated = $this->validate([
+            'formRewardPoints' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'formRewardStars' => ['required', 'integer', 'min:0', 'max:10000'],
+        ]);
+
+        $kid = $this->ownedKids()->findOrFail($this->editingRewardsKidId);
+        $kid->update([
+            'points' => (int) $validated['formRewardPoints'],
+            'stars' => (int) $validated['formRewardStars'],
+        ]);
+
+        $this->closeRewardsEditor();
+        $this->dispatch('toast', message: 'Kid points/stars updated.', type: 'success');
+    }
+
+    public function closeRewardsEditor(): void
+    {
+        $this->editingRewardsKidId = null;
+        $this->editingRewardsKidName = '';
+        $this->formRewardPoints = 0;
+        $this->formRewardStars = 0;
+        $this->resetErrorBag();
     }
 
     public function render()

@@ -189,6 +189,7 @@
 
                     <div class="mt-3 flex gap-2">
                         <button type="button" wire:click.prevent="loginAsKid({{ $kid->id }})" class="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-bold text-white">Login as Kid</button>
+                        <button type="button" wire:click.prevent="openRewardsEditor({{ $kid->id }})" class="rounded-xl bg-violet-500 px-3 py-2 text-sm font-bold text-white">Edit Points/Stars</button>
                         <button type="button" wire:click.prevent="editKid({{ $kid->id }})" class="rounded-xl bg-blue-500 px-3 py-2 text-sm font-bold text-white">Edit</button>
                         <button type="button" wire:click.prevent="deleteKid({{ $kid->id }})" wire:confirm="Delete {{ $kid->name }}?" class="rounded-xl bg-red-500 px-3 py-2 text-sm font-bold text-white">Delete</button>
 
@@ -199,4 +200,33 @@
             @endforelse
         </div>
     </div>
+
+    @if($editingRewardsKidId)
+        <div class="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" wire:click.self="closeRewardsEditor">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <h3 class="text-kid-xl font-bold text-slate-800">Edit Points & Stars</h3>
+                <p class="mt-1 text-sm text-slate-500">{{ $editingRewardsKidName }}</p>
+                <p class="mt-1 text-xs text-slate-500">Stars are derived from points at 100 points per star.</p>
+
+                <div class="mt-4 grid gap-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-semibold text-slate-700">Points</label>
+                        <input wire:model.live="formRewardPoints" type="number" min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                        @error('formRewardPoints') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-semibold text-slate-700">Stars</label>
+                        <input wire:model.live="formRewardStars" type="number" min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                        @error('formRewardStars') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="mt-5 flex gap-3">
+                    <button type="button" wire:click="saveRewardsEditor" class="kid-btn kid-btn-primary w-full">Save</button>
+                    <button type="button" wire:click="closeRewardsEditor" class="kid-btn kid-btn-warn w-full">Cancel</button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

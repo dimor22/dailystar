@@ -20,6 +20,7 @@ class Kid extends Model
         'pin',
         'public_id',
         'points',
+        'stars',
     ];
 
     protected $hidden = [
