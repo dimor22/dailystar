@@ -490,9 +490,7 @@ class KidsManager extends Component
     private function availableTasks()
     {
         return Task::query()
-            ->whereHas('kids', function ($query) {
-                $query->where('parent_id', $this->parentId);
-            })
+            ->where('parent_id', $this->parentId)
             ->orderBy('title')
             ->get(['id', 'title', 'points']);
     }

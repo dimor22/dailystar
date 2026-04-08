@@ -2,7 +2,7 @@
     <div class="kid-card h-fit lg:sticky lg:top-6">
         <h1 class="kid-title">Manage Tasks</h1>
         <p class="mt-1 text-slate-600">Create and update tasks for your kids.</p>
-        <p class="mt-1 text-xs text-slate-500">New tasks are assigned to each kid for Mon-Fri by default. You can adjust days in Manage Kids.</p>
+        <p class="mt-1 text-xs text-slate-500">Use the assignment checkbox when creating a task if you want to assign it to all kids for Mon-Fri. You can always adjust days in Manage Kids.</p>
 
         <form wire:submit="{{ $editingTaskId ? 'updateTask' : 'createTask' }}" class="mt-6 grid gap-4 lg:grid-cols-2" autocomplete="off">
             <div>
@@ -58,6 +58,16 @@
                     Active task
                 </label>
             </div>
+
+            @if(! $editingTaskId)
+                <div class="md:col-span-2">
+                    <label class="inline-flex items-start gap-2 text-sm font-semibold text-slate-700">
+                        <input wire:model.live="assignToAllKidsOnCreate" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300">
+                        Assign this task to all kids/students now (Mon-Fri)
+                    </label>
+                    <p class="mt-1 text-xs text-slate-500">Unchecked by default. Leave unchecked to create the task without assigning it to anyone.</p>
+                </div>
+            @endif
 
             <div class="md:col-span-2">
                 <label class="mb-1 block text-sm font-semibold text-slate-700">Description</label>

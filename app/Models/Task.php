@@ -10,6 +10,7 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
+        'parent_id',
         'title',
         'description',
         'image_path',
@@ -26,5 +27,10 @@ class Task extends Model
     {
         return $this->belongsToMany(Kid::class, 'kid_tasks')
             ->withPivot(['id', 'order', 'active', 'days_of_week', 'created_at']);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'parent_id');
     }
 }

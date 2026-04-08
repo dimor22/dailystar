@@ -43,6 +43,8 @@ class TasksManager extends Component
 
     public bool $formActive = true;
 
+    public bool $assignToAllKidsOnCreate = false;
+
     public ?int $editingTaskId = null;
 
     public function mount(): void
@@ -63,6 +65,7 @@ class TasksManager extends Component
             $taskImagePath = $this->storeTaskImageIfUploaded($this->formTaskImage);
 
             $task = Task::query()->create([
+                'parent_id' => $this->parentId,
                 'title' => $validated['formTitle'],
                 'description' => $validated['formDescription'] ?: null,
                 'image_path' => $taskImagePath,
@@ -71,19 +74,21 @@ class TasksManager extends Component
                 'active' => $validated['formActive'],
             ]);
 
-            $kids = Kid::query()->where('parent_id', $this->parentId)->get();
+            if ($this->assignToAllKidsOnCreate) {
+                $kids = Kid::query()->where('parent_id', $this->parentId)->get();
 
-            foreach ($kids as $kid) {
-                $nextOrder = ((int) KidTask::query()->where('kid_id', $kid->id)->max('order')) + 1;
+                foreach ($kids as $kid) {
+                    $nextOrder = ((int) KidTask::query()->where('kid_id', $kid->id)->max('order')) + 1;
 
-                KidTask::query()->create([
-                    'kid_id' => $kid->id,
-                    'task_id' => $task->id,
-                    'order' => $nextOrder,
-                    'active' => true,
-                    'days_of_week' => self::DEFAULT_WEEK_DAYS,
-                    'created_at' => now(),
-                ]);
+                    KidTask::query()->create([
+                        'kid_id' => $kid->id,
+                        'task_id' => $task->id,
+                        'order' => $nextOrder,
+                        'active' => true,
+                        'days_of_week' => self::DEFAULT_WEEK_DAYS,
+                        'created_at' => now(),
+                    ]);
+                }
             }
         });
 
@@ -207,9 +212,7 @@ class TasksManager extends Component
 
     private function ownedTasks()
     {
-        return Task::query()->whereHas('kids', function ($query) {
-            $query->where('parent_id', $this->parentId);
-        });
+        return Task::query()->where('parent_id', $this->parentId);
     }
 
     protected function rules(): array
@@ -244,6 +247,7 @@ class TasksManager extends Component
         $this->formPoints = 10;
         $this->formCategory = 'Study';
         $this->formActive = true;
+        $this->assignToAllKidsOnCreate = false;
         $this->resetErrorBag();
     }
 }
