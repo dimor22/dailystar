@@ -353,32 +353,37 @@
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 @foreach($redeemablePointsItems as $reward)
                     <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
-                        <div class="flex items-start gap-3">
-                            <div class="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white text-3xl">
+                        <div class="flex items-stretch gap-4">
+                            <div class="basis-[30%] shrink-0">
+                                <div class="flex h-full min-h-[120px] w-full items-center justify-center overflow-hidden rounded-xl bg-white text-5xl">
                                 @if(!empty($reward['image_path']))
                                     <img src="{{ \Illuminate\Support\Facades\Storage::url($reward['image_path']) }}" alt="{{ $reward['title'] }}" class="h-full w-full object-cover" />
                                 @else
                                     🎁
                                 @endif
+                                </div>
                             </div>
-                            <div class="min-w-0 flex-1">
+
+                            <div class="basis-[70%] min-w-0 flex-1 flex flex-col justify-between">
+                                <div>
                                 <p class="truncate text-lg font-bold text-slate-800">{{ $reward['title'] }}</p>
                                 <p class="text-sm font-semibold text-emerald-700">{{ $reward['points'] }} points</p>
                                 @if(!empty($reward['description']))
                                     <p class="mt-1 text-sm text-slate-600 line-clamp-2">{{ $reward['description'] }}</p>
                                 @endif
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="kid-btn kid-btn-success mt-4 w-full"
+                                    wire:click="redeemPointsReward({{ $reward['id'] }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="redeemPointsReward"
+                                >
+                                    Redeem Reward
+                                </button>
                             </div>
                         </div>
-
-                        <button
-                            type="button"
-                            class="kid-btn kid-btn-success mt-3 w-full"
-                            wire:click="redeemPointsReward({{ $reward['id'] }})"
-                            wire:loading.attr="disabled"
-                            wire:target="redeemPointsReward"
-                        >
-                            Redeem Reward
-                        </button>
                     </div>
                 @endforeach
             </div>
