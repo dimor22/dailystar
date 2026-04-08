@@ -40,6 +40,8 @@ class KidDashboard extends Component
 
     public int $stars = 0;
 
+    public int $pointsEarnedToday = 0;
+
     public int $currentStreak = 0;
 
     public ?string $currentStreakImage = null;
@@ -159,6 +161,17 @@ class KidDashboard extends Component
         $this->kidColor = (string) ($kid->color ?: 'bg-blue-500');
         $this->points = (int) $kid->points;
         $this->stars = (int) $kid->stars;
+
+        $dailyPointsBaselineSessionKey = "daily_points_baseline.{$kid->id}.{$today}";
+        $dailyPointsBaseline = session($dailyPointsBaselineSessionKey);
+
+        if (! is_numeric($dailyPointsBaseline)) {
+            $dailyPointsBaseline = $this->points;
+            session()->put($dailyPointsBaselineSessionKey, $dailyPointsBaseline);
+        }
+
+        $this->pointsEarnedToday = max(0, $this->points - (int) $dailyPointsBaseline);
+
         $this->currentStreak = (int) ($kid->streak->current_streak ?? 0);
         $this->taskCount = count($this->tasks);
         $this->completedCount = count(array_filter($this->tasks, fn (array $task) => $task['completed']));
@@ -333,7 +346,11 @@ class KidDashboard extends Component
         }
 
         if ($allTasksDone && ! $this->wasAllTasksDone && ! $dismissedToday) {
-            $this->dispatch('daily-goals-complete', date: $today);
+            $this->dispatch(
+                'daily-goals-complete',
+                date: $today,
+                points_earned_today: $this->pointsEarnedToday
+            );
         }
 
         if (! $allTasksDone) {

@@ -6,6 +6,14 @@
         activeModal: null,
         canDismissActiveModal: false,
         dismissTimerId: null,
+        dailyCelebrationGifUrl: '',
+        dailyCelebrationGifs: [
+            'https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif',
+            'https://media.giphy.com/media/XD9o33QG9BoMis7iM4/giphy.gif',
+            'https://media.giphy.com/media/l4FGGafcOHmrlQxG0/giphy.gif',
+            'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif',
+            'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif',
+        ],
         confettiPieces: [],
         confettiWave: 0,
         normalizeDetail(detail) {
@@ -118,8 +126,12 @@
         },
         launchDailyGoalsCelebration(detail) {
             const payload = this.normalizeDetail(detail);
+            const randomGif = this.dailyCelebrationGifs[Math.floor(Math.random() * this.dailyCelebrationGifs.length)];
+            this.dailyCelebrationGifUrl = randomGif;
+
             this.enqueueModal('daily-goals-complete', {
                 date: payload?.date ?? null,
+                points_earned_today: Number(payload?.points_earned_today ?? 0),
             });
         },
         dismissDailyGoalsCelebration() {
@@ -558,8 +570,15 @@
     >
         <div class="max-w-lg rounded-2xl bg-white p-8 text-center shadow-2xl">
             <h2 class="kid-title">Amazing Work! 🎉</h2>
-            <p class="mt-3 text-kid-xl text-slate-700">All tasks are done for today. You earned all your stars!</p>
-            <div class="mt-6 text-5xl animate-bounce">🌟🌟🌟</div>
+            <p class="mt-3 text-kid-xl text-slate-700">
+                You finished all your tasks today and earned
+                <span class="font-extrabold text-amber-500" x-text="activeModal?.payload?.points_earned_today ?? 0"></span>
+                <span x-text="(activeModal?.payload?.points_earned_today ?? 0) === 1 ? 'point' : 'points'"></span>
+                today.
+            </p>
+            <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                <img :src="dailyCelebrationGifUrl" alt="Funny celebration" class="mx-auto h-48 w-full object-cover" loading="lazy" />
+            </div>
             <button class="kid-btn kid-btn-primary mt-6" type="button" :disabled="!canDismissActiveModal" @click="dismissDailyGoalsCelebration()">Yay!</button>
         </div>
     </div>
