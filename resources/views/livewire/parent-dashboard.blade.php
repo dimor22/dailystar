@@ -229,7 +229,30 @@
                         <h3 class="text-sm font-bold uppercase tracking-wide text-slate-600">{{ $day['date_label'] }}</h3>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="sm:hidden divide-y divide-slate-100">
+                        @foreach($day['logs'] as $log)
+                            <div class="px-4 py-3 space-y-2">
+                                <div class="grid grid-cols-[5rem_1fr] gap-2 text-sm">
+                                    <p class="font-semibold text-slate-500">Kid</p>
+                                    <p class="font-semibold text-slate-800">{{ $log['kid'] ?? 'Unknown' }}</p>
+                                </div>
+                                <div class="grid grid-cols-[5rem_1fr] gap-2 text-sm">
+                                    <p class="font-semibold text-slate-500">Task</p>
+                                    <p class="text-slate-700 break-words">{{ $log['task'] ?? '-' }}</p>
+                                </div>
+                                <div class="grid grid-cols-[5rem_1fr] gap-2 text-sm">
+                                    <p class="font-semibold text-slate-500">Action</p>
+                                    <p class="text-slate-700 break-words">{{ $log['action'] ?? '-' }}</p>
+                                </div>
+                                <div class="grid grid-cols-[5rem_1fr] gap-2 text-sm">
+                                    <p class="font-semibold text-slate-500">Time</p>
+                                    <p class="text-slate-700">{{ $log['completed_at'] ?? '-' }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="hidden sm:block overflow-x-auto">
                         <table class="w-full text-left text-lg">
                             <thead>
                                 <tr class="border-b-2 border-slate-200">
