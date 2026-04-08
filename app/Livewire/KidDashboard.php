@@ -62,6 +62,8 @@ class KidDashboard extends Component
 
     public array $redeemablePointsItems = [];
 
+    public array $pointsStoreItems = [];
+
     public array $nextStarReward = [];
 
     public array $nextStreakBonus = [];
@@ -229,6 +231,25 @@ class KidDashboard extends Component
             ->orderByDesc('points')
             ->orderBy('title')
             ->get();
+
+        $allActivePointsStoreItems = PointsStoreItem::query()
+            ->where('parent_id', $parentId)
+            ->where('active', true)
+            ->orderBy('points')
+            ->orderBy('title')
+            ->get();
+
+        $this->pointsStoreItems = $allActivePointsStoreItems
+            ->map(fn (PointsStoreItem $item) => [
+                'id' => (int) $item->id,
+                'title' => (string) $item->title,
+                'description' => (string) ($item->description ?? ''),
+                'points' => (int) $item->points,
+                'image_path' => $item->image_path,
+                'can_afford' => $this->points >= (int) $item->points,
+            ])
+            ->values()
+            ->all();
 
         $this->redeemablePointsItems = $redeemableItems
             ->map(fn (PointsStoreItem $item) => [

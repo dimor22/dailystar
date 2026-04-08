@@ -6,6 +6,7 @@
         activeModal: null,
         canDismissActiveModal: false,
         dismissTimerId: null,
+        pointsShopModalOpen: false,
         dailyCelebrationGifUrl: '',
         dailyCelebrationGifs: [
             'https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif',
@@ -149,7 +150,7 @@
     x-on:streak-reached.window="launchStreakCelebration($event.detail)"
     x-on:task-completed-details.window="launchTaskCompletedCelebration($event.detail)"
     x-on:daily-goals-complete.window="launchDailyGoalsCelebration($event.detail)"
-    @keydown.escape.window="closeActiveModal()"
+    @keydown.escape.window="if (pointsShopModalOpen) pointsShopModalOpen = false; else closeActiveModal()"
 >
     <div class="grid gap-4 lg:grid-cols-3">
         @php
@@ -266,6 +267,13 @@
                                 <div class="h-2.5 rounded-full bg-amber-400 transition-all duration-500"
                                     style="width: {{ min(100, (int) round($points / max(1, $nextPointsItem['points']) * 100)) }}%"></div>
                             </div>
+                            <button
+                                type="button"
+                                class="mt-3 rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-600"
+                                @click="pointsShopModalOpen = true"
+                            >
+                                View Shop
+                            </button>
                         @else
                             <p class="text-lg font-bold text-slate-400">No items yet</p>
                             <p class="mt-1 text-sm text-slate-400">Ask your parent to add store items!</p>
@@ -390,6 +398,54 @@
         @else
             <p class="mt-3 text-slate-500">No rewards are redeemable yet. Keep completing tasks to unlock rewards.</p>
         @endif
+    </div>
+
+    <div
+        x-show="pointsShopModalOpen"
+        x-cloak
+        class="fixed inset-0 z-[98] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="pointsShopModalOpen = false"
+    >
+        <div class="kid-card w-full max-w-3xl">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-kid-xl font-bold text-slate-800">Points Shop</h2>
+                <button type="button" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300" @click="pointsShopModalOpen = false">Close</button>
+            </div>
+
+            <div class="mt-4 max-h-[68vh] overflow-y-auto pr-1">
+                @if(!empty($pointsStoreItems))
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @foreach($pointsStoreItems as $shopReward)
+                            <div class="rounded-xl border border-slate-200 bg-white p-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-3xl">
+                                        @if(!empty($shopReward['image_path']))
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($shopReward['image_path']) }}" alt="{{ $shopReward['title'] }}" class="h-full w-full object-cover" />
+                                        @else
+                                            🎁
+                                        @endif
+                                    </div>
+
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-base font-bold text-slate-800">{{ $shopReward['title'] }}</p>
+                                        <p class="text-sm font-semibold text-emerald-700">{{ $shopReward['points'] }} points</p>
+                                        @if(!empty($shopReward['description']))
+                                            <p class="mt-1 text-sm text-slate-600 line-clamp-2">{{ $shopReward['description'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <p class="mt-2 text-xs font-semibold {{ $shopReward['can_afford'] ? 'text-green-600' : 'text-slate-500' }}">
+                                    {{ $shopReward['can_afford'] ? 'Ready to redeem' : 'Keep earning points' }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">No active point rewards yet.</p>
+                @endif
+            </div>
+        </div>
     </div>
 
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
