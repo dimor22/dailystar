@@ -333,7 +333,7 @@ class KidDashboard extends Component
         }
 
         if ($allTasksDone && ! $this->wasAllTasksDone && ! $dismissedToday) {
-            $this->showCelebration = true;
+            $this->dispatch('daily-goals-complete', date: $today);
         }
 
         if (! $allTasksDone) {

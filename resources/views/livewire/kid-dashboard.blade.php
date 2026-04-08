@@ -2,19 +2,56 @@
     class="space-y-6"
     wire:poll.20s="loadDashboard"
     x-data="{
-        rewardUnlockedCelebrationOpen: false,
-        rewardUnlockedCelebrationTitle: '',
-        rewardUnlockedCelebrationPoints: 0,
-        redeemCelebrationOpen: false,
-        redeemCelebrationTitle: '',
-        redeemCelebrationPoints: 0,
-        badgeCelebrationOpen: false,
-        badgeCelebrationTitle: '',
-        badgeCelebrationImageUrl: null,
-        streakCelebrationOpen: false,
-        streakCelebrationDays: 0,
+        modalQueue: [],
+        activeModal: null,
+        canDismissActiveModal: false,
+        dismissTimerId: null,
         confettiPieces: [],
         confettiWave: 0,
+        normalizeDetail(detail) {
+            return Array.isArray(detail) ? detail[0] : detail;
+        },
+        enqueueModal(type, payload = {}) {
+            this.modalQueue.push({
+                id: `${Date.now()}-${Math.random()}`,
+                type,
+                payload,
+            });
+
+            this.showNextModal();
+        },
+        showNextModal() {
+            if (this.activeModal || this.modalQueue.length === 0) {
+                return;
+            }
+
+            this.activeModal = this.modalQueue.shift();
+            this.canDismissActiveModal = false;
+            this.launchConfetti();
+
+            if (this.dismissTimerId) {
+                clearTimeout(this.dismissTimerId);
+            }
+
+            // Keep each modal visible briefly before allowing dismissal.
+            this.dismissTimerId = setTimeout(() => {
+                this.canDismissActiveModal = true;
+                this.dismissTimerId = null;
+            }, 1200);
+        },
+        closeActiveModal() {
+            if (! this.activeModal || ! this.canDismissActiveModal) {
+                return;
+            }
+
+            this.activeModal = null;
+            this.canDismissActiveModal = false;
+            this.confettiPieces = [];
+
+            setTimeout(() => {
+                this.showNextModal();
+            }, 120);
+        },
         launchConfetti() {
             this.confettiWave += 1;
 
@@ -43,63 +80,64 @@
             }, 5600);
         },
         launchRedeemCelebration(detail) {
-            const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.rewardUnlockedCelebrationOpen = false;
-            this.badgeCelebrationOpen = false;
-            this.redeemCelebrationTitle = payload?.title ?? 'Reward';
-            this.redeemCelebrationPoints = Number(payload?.points ?? 0);
-            this.redeemCelebrationOpen = true;
-            this.launchConfetti();
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('reward-redeemed', {
+                title: payload?.title ?? 'Reward',
+                points: Number(payload?.points ?? 0),
+            });
         },
         launchRewardUnlockedCelebration(detail) {
-            const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.redeemCelebrationOpen = false;
-            this.badgeCelebrationOpen = false;
-            this.streakCelebrationOpen = false;
-            this.rewardUnlockedCelebrationTitle = payload?.title ?? 'Reward';
-            this.rewardUnlockedCelebrationPoints = Number(payload?.points ?? 0);
-            this.rewardUnlockedCelebrationOpen = true;
-            this.launchConfetti();
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('points-reward-unlocked', {
+                title: payload?.title ?? 'Reward',
+                points: Number(payload?.points ?? 0),
+            });
         },
         launchBadgeCelebration(detail) {
-            const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.redeemCelebrationOpen = false;
-            this.streakCelebrationOpen = false;
-            this.badgeCelebrationTitle = payload?.title ?? 'New Badge';
-            this.badgeCelebrationImageUrl = payload?.image_url ?? null;
-            this.badgeCelebrationOpen = true;
-            this.launchConfetti();
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('badge-unlocked', {
+                title: payload?.title ?? 'New Badge',
+                image_url: payload?.image_url ?? null,
+            });
         },
         launchStreakCelebration(detail) {
-            const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.redeemCelebrationOpen = false;
-            this.badgeCelebrationOpen = false;
-            this.streakCelebrationDays = Number(payload?.days ?? 0);
-            this.streakCelebrationOpen = true;
-            this.launchConfetti();
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('streak-reached', {
+                days: Number(payload?.days ?? 0),
+            });
         },
-        closeRedeemCelebration() {
-            this.redeemCelebrationOpen = false;
-            this.confettiPieces = [];
+        launchTaskCompletedCelebration(detail) {
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('task-completed', {
+                task_points: Number(payload?.task_points ?? 0),
+                bonus_percent: Number(payload?.bonus_percent ?? 0),
+                bonus_points: Number(payload?.bonus_points ?? 0),
+                total_task_points: Number(payload?.total_task_points ?? 0),
+                bonus_type_key: String(payload?.bonus_type_key ?? 'no_bonus'),
+            });
         },
-        closeRewardUnlockedCelebration() {
-            this.rewardUnlockedCelebrationOpen = false;
-            this.confettiPieces = [];
+        launchDailyGoalsCelebration(detail) {
+            const payload = this.normalizeDetail(detail);
+            this.enqueueModal('daily-goals-complete', {
+                date: payload?.date ?? null,
+            });
         },
-        closeBadgeCelebration() {
-            this.badgeCelebrationOpen = false;
-            this.confettiPieces = [];
-        },
-        closeStreakCelebration() {
-            this.streakCelebrationOpen = false;
-            this.confettiPieces = [];
+        dismissDailyGoalsCelebration() {
+            if (! this.canDismissActiveModal || this.activeModal?.type !== 'daily-goals-complete') {
+                return;
+            }
+
+            this.$wire.dismissCelebration();
+            this.closeActiveModal();
         },
     }"
     x-on:points-reward-unlocked.window="launchRewardUnlockedCelebration($event.detail)"
     x-on:reward-redeemed.window="launchRedeemCelebration($event.detail)"
     x-on:badge-unlocked.window="launchBadgeCelebration($event.detail)"
     x-on:streak-reached.window="launchStreakCelebration($event.detail)"
-    @keydown.escape.window="if (rewardUnlockedCelebrationOpen) closeRewardUnlockedCelebration(); if (redeemCelebrationOpen) closeRedeemCelebration(); if (badgeCelebrationOpen) closeBadgeCelebration(); if (streakCelebrationOpen) closeStreakCelebration()"
+    x-on:task-completed-details.window="launchTaskCompletedCelebration($event.detail)"
+    x-on:daily-goals-complete.window="launchDailyGoalsCelebration($event.detail)"
+    @keydown.escape.window="closeActiveModal()"
 >
     <div class="grid gap-4 lg:grid-cols-3">
         @php
@@ -352,8 +390,6 @@
         @endforeach
     </div>
 
-    <livewire:celebration-modal :show="$showCelebration" :kidId="$kidId" :currentDate="$currentDate" :key="'celebration-'.$kidId.'-'.$currentDate.'-'.($showCelebration ? '1' : '0')" />
-
     <div class="pointer-events-none fixed inset-0 z-[95] overflow-hidden" aria-hidden="true">
         <template x-for="piece in confettiPieces" :key="piece.id">
             <span
@@ -373,26 +409,27 @@
     </div>
 
     <div
-        x-show="rewardUnlockedCelebrationOpen"
+        x-show="activeModal?.type === 'points-reward-unlocked'"
         x-cloak
         class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
-        @click.self="closeRewardUnlockedCelebration()"
+        @click.self="closeActiveModal()"
     >
         <div class="kid-card w-full max-w-md text-center">
             <p class="text-5xl">🎁</p>
             <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">New Reward Unlocked!</h2>
             <p class="mt-2 text-lg font-semibold text-slate-700">
-                <span class="text-emerald-600" x-text="rewardUnlockedCelebrationTitle"></span>
+                <span class="text-emerald-600" x-text="activeModal?.payload?.title ?? 'Reward'"></span>
                 is now available in your reward shop.
             </p>
             <p class="mt-1 text-sm text-slate-500">
-                You reached <span class="font-bold" x-text="rewardUnlockedCelebrationPoints"></span> points. Go redeem it!
+                You reached <span class="font-bold" x-text="activeModal?.payload?.points ?? 0"></span> points. Go redeem it!
             </p>
 
             <button
                 type="button"
                 class="kid-btn kid-btn-success mt-5 w-full"
-                @click="closeRewardUnlockedCelebration()"
+                :disabled="!canDismissActiveModal"
+                @click="closeActiveModal()"
             >
                 Let's Go!
             </button>
@@ -400,25 +437,26 @@
     </div>
 
     <div
-        x-show="redeemCelebrationOpen"
+        x-show="activeModal?.type === 'reward-redeemed'"
         x-cloak
         class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
-        @click.self="closeRedeemCelebration()"
+        @click.self="closeActiveModal()"
     >
         <div class="kid-card w-full max-w-md text-center">
             <p class="text-5xl">🎉</p>
             <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">Reward Redeemed!</h2>
             <p class="mt-2 text-lg font-semibold text-slate-700">
-                You unlocked <span class="text-emerald-600" x-text="redeemCelebrationTitle"></span>
+                You unlocked <span class="text-emerald-600" x-text="activeModal?.payload?.title ?? 'Reward'"></span>
             </p>
             <p class="mt-1 text-sm text-slate-500">
-                <span x-text="redeemCelebrationPoints"></span> points spent. Nice work!
+                <span x-text="activeModal?.payload?.points ?? 0"></span> points spent. Nice work!
             </p>
 
             <button
                 type="button"
                 class="kid-btn kid-btn-success mt-5 w-full"
-                @click="closeRedeemCelebration()"
+                :disabled="!canDismissActiveModal"
+                @click="closeActiveModal()"
             >
                 Awesome!
             </button>
@@ -426,30 +464,31 @@
     </div>
 
     <div
-        x-show="badgeCelebrationOpen"
+        x-show="activeModal?.type === 'badge-unlocked'"
         x-cloak
         class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
-        @click.self="closeBadgeCelebration()"
+        @click.self="closeActiveModal()"
     >
         <div class="kid-card w-full max-w-md text-center">
             <p class="text-5xl">⭐</p>
             <h2 class="mt-2 text-kid-2xl font-extrabold text-slate-800">New Badge Unlocked!</h2>
 
             <div class="mx-auto mt-4 flex h-44 w-44 items-center justify-center overflow-hidden rounded-3xl bg-yellow-50 shadow-inner">
-                <template x-if="badgeCelebrationImageUrl">
-                    <img :src="badgeCelebrationImageUrl" alt="Unlocked badge" class="h-full w-full object-cover" />
+                <template x-if="activeModal?.payload?.image_url">
+                    <img :src="activeModal?.payload?.image_url" alt="Unlocked badge" class="h-full w-full object-cover" />
                 </template>
-                <template x-if="!badgeCelebrationImageUrl">
+                <template x-if="!activeModal?.payload?.image_url">
                     <span class="text-7xl">⭐</span>
                 </template>
             </div>
 
-            <p class="mt-4 text-lg font-semibold text-slate-700" x-text="badgeCelebrationTitle"></p>
+            <p class="mt-4 text-lg font-semibold text-slate-700" x-text="activeModal?.payload?.title ?? 'New Badge'"></p>
 
             <button
                 type="button"
                 class="kid-btn kid-btn-success mt-5 w-full"
-                @click="closeBadgeCelebration()"
+                :disabled="!canDismissActiveModal"
+                @click="closeActiveModal()"
             >
                 So Cool!
             </button>
@@ -457,10 +496,10 @@
     </div>
 
     <div
-        x-show="streakCelebrationOpen"
+        x-show="activeModal?.type === 'streak-reached'"
         x-cloak
         class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
-        @click.self="closeStreakCelebration()"
+        @click.self="closeActiveModal()"
     >
         <div class="kid-card w-full max-w-md text-center">
             <p class="text-5xl">🔥</p>
@@ -469,7 +508,7 @@
             <div class="mx-auto mt-4 flex h-44 w-44 items-center justify-center rounded-3xl bg-orange-50 shadow-inner">
                 <div class="text-center">
                     <p class="text-7xl leading-none">🔥</p>
-                    <p class="mt-2 text-2xl font-extrabold text-orange-700" x-text="`${streakCelebrationDays} days`"></p>
+                    <p class="mt-2 text-2xl font-extrabold text-orange-700" x-text="`${activeModal?.payload?.days ?? 0} days`"></p>
                 </div>
             </div>
 
@@ -478,10 +517,50 @@
             <button
                 type="button"
                 class="kid-btn kid-btn-success mt-5 w-full"
-                @click="closeStreakCelebration()"
+                :disabled="!canDismissActiveModal"
+                @click="closeActiveModal()"
             >
                 Keep Going!
             </button>
+        </div>
+    </div>
+
+    <div
+        x-show="activeModal?.type === 'task-completed'"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-slate-900/45 p-4"
+        @click.self="closeActiveModal()"
+    >
+        <div class="kid-card w-full max-w-md text-center">
+            <p class="text-kid-xl font-bold text-slate-800">Task Completed! 🎉</p>
+            <p class="mt-2 text-lg text-slate-600" x-show="(activeModal?.payload?.bonus_type_key ?? 'no_bonus') === 'no_bonus'">
+                Amazing consistency. Keep going!
+            </p>
+            <p class="mt-2 text-lg text-slate-600" x-show="(activeModal?.payload?.bonus_type_key ?? 'no_bonus') !== 'no_bonus'">
+                Streak bonus active: <span class="font-extrabold text-emerald-600" x-text="`+${activeModal?.payload?.bonus_percent ?? 0}%`"></span>
+            </p>
+
+            <div class="mt-4 rounded-xl bg-slate-50 p-4 text-left text-sm text-slate-700">
+                <p>Base points: <span class="font-bold" x-text="activeModal?.payload?.task_points ?? 0"></span></p>
+                <p>Bonus points: <span class="font-bold" x-text="activeModal?.payload?.bonus_points ?? 0"></span></p>
+                <p>Total earned: <span class="font-extrabold text-emerald-700" x-text="activeModal?.payload?.total_task_points ?? 0"></span></p>
+            </div>
+
+            <button class="kid-btn kid-btn-success mt-5 w-full" :disabled="!canDismissActiveModal" @click="closeActiveModal()">Awesome!</button>
+        </div>
+    </div>
+
+    <div
+        x-show="activeModal?.type === 'daily-goals-complete'"
+        x-cloak
+        class="fixed inset-0 z-[100] grid place-items-center bg-indigo-950/60 p-4"
+        @click.self="dismissDailyGoalsCelebration()"
+    >
+        <div class="max-w-lg rounded-2xl bg-white p-8 text-center shadow-2xl">
+            <h2 class="kid-title">Amazing Work! 🎉</h2>
+            <p class="mt-3 text-kid-xl text-slate-700">All tasks are done for today. You earned all your stars!</p>
+            <div class="mt-6 text-5xl animate-bounce">🌟🌟🌟</div>
+            <button class="kid-btn kid-btn-primary mt-6" type="button" :disabled="!canDismissActiveModal" @click="dismissDailyGoalsCelebration()">Yay!</button>
         </div>
     </div>
 </div>

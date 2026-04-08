@@ -4,12 +4,6 @@
         openConfirm: false,
         isDone: @js($completed),
         showStars: false,
-        completeModalOpen: false,
-        completeModalBonusPercent: 0,
-        completeModalBonusTypeKey: 'no_bonus',
-        completeModalTaskPoints: 0,
-        completeModalBonusPoints: 0,
-        completeModalTotalPoints: 0,
         async completeTask() {
             if (this.isDone) return;
 
@@ -42,12 +36,15 @@
             this.showStars = true;
             setTimeout(() => this.showStars = false, 1900);
 
-            this.completeModalTaskPoints = Number(payload?.task_points ?? @js($points));
-            this.completeModalBonusPercent = Number(payload?.bonus_percent ?? 0);
-            this.completeModalBonusPoints = Number(payload?.bonus_points ?? 0);
-            this.completeModalTotalPoints = Number(payload?.total_task_points ?? this.completeModalTaskPoints);
-            this.completeModalBonusTypeKey = String(payload?.bonus_type_key ?? 'no_bonus');
-            this.completeModalOpen = true;
+            window.dispatchEvent(new CustomEvent('task-completed-details', {
+                detail: {
+                    task_points: Number(payload?.task_points ?? @js($points)),
+                    bonus_percent: Number(payload?.bonus_percent ?? 0),
+                    bonus_points: Number(payload?.bonus_points ?? 0),
+                    total_task_points: Number(payload?.total_task_points ?? Number(payload?.task_points ?? @js($points))),
+                    bonus_type_key: String(payload?.bonus_type_key ?? 'no_bonus'),
+                },
+            }));
 
             if (window.Livewire?.dispatch) {
                 window.Livewire.dispatch('task-completed');
@@ -94,25 +91,5 @@
 
     <div x-show="showStars" x-transition class="pointer-events-none absolute inset-0 grid place-items-center text-5xl">
         <span class="animate-pulse">✨⭐✨</span>
-    </div>
-
-    <div x-show="completeModalOpen" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" @click.self="completeModalOpen = false">
-        <div class="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
-            <p class="text-kid-xl font-bold text-slate-800">Task Completed! 🎉</p>
-            <p class="mt-2 text-lg text-slate-600" x-show="completeModalBonusTypeKey === 'no_bonus'">
-                Amazing consistency. Keep going!
-            </p>
-            <p class="mt-2 text-lg text-slate-600" x-show="completeModalBonusTypeKey !== 'no_bonus'">
-                Streak bonus active: <span class="font-extrabold text-emerald-600" x-text="`+${completeModalBonusPercent}%`"></span>
-            </p>
-
-            <div class="mt-4 rounded-xl bg-slate-50 p-4 text-left text-sm text-slate-700">
-                <p>Base points: <span class="font-bold" x-text="completeModalTaskPoints"></span></p>
-                <p>Bonus points: <span class="font-bold" x-text="completeModalBonusPoints"></span></p>
-                <p>Total earned: <span class="font-extrabold text-emerald-700" x-text="completeModalTotalPoints"></span></p>
-            </div>
-
-            <button class="kid-btn kid-btn-success mt-5 w-full" @click="completeModalOpen = false">Awesome!</button>
-        </div>
     </div>
 </div>
