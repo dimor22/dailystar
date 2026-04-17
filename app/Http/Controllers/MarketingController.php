@@ -41,6 +41,11 @@ class MarketingController extends Controller
         return view('pages.marketing.donate');
     }
 
+    public function pricing(): View
+    {
+        return view('pages.marketing.pricing');
+    }
+
     public function submitContact(Request $request): RedirectResponse
     {
         $validated = $request->validate([
