@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'DailyStars' }}</title>
-    <meta name="description" content="DailyStars helps homeschool families build consistent, joyful routines with kid-friendly tasks and progress tracking.">
+    <meta name="description" content="Turn your homeschool day into a game kids want to finish.">
     <link rel="icon" type="image/png" href="{{ asset('dailystars-favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
