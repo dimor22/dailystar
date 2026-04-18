@@ -10,5 +10,7 @@
         </form>
     </x-app-nav>
 
+    <livewire:upgrade-banner />
+
     <livewire:tasks-manager />
 </x-layouts.app>

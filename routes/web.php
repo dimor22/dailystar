@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\KidSharedLinkController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ParentAuthController;
@@ -31,4 +32,11 @@ Route::middleware('parent.auth')->group(function () {
 	Route::view('/settings/points-store', 'pages.settings-points-store')->name('parent.settings.points-store');
 	Route::view('/settings/star-rewards', 'pages.settings-star-rewards')->name('parent.settings.star-rewards');
 	Route::view('/settings/streak-bonuses', 'pages.settings-streak-bonuses')->name('parent.settings.streak-bonuses');
+
+	// Billing & Subscription
+	Route::get('/billing', [BillingController::class, 'show'])->name('parent.billing');
+	Route::get('/billing/checkout', [BillingController::class, 'checkout'])->name('parent.billing.checkout');
+	Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('parent.billing.cancel');
+	Route::post('/billing/resume', [BillingController::class, 'resume'])->name('parent.billing.resume');
+	Route::post('/billing/portal', [BillingController::class, 'portal'])->name('parent.billing.portal');
 });

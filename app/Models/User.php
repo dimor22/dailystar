@@ -3,14 +3,33 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Plan;
+use App\Services\PlanGate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, Billable, HasFactory, Notifiable;
+
+    /**
+     * Resolve this user's active plan via PlanGate.
+     */
+    public function plan(): Plan
+    {
+        return app(PlanGate::class)->planFor($this);
+    }
+
+    /**
+     * Convenience: true when this user has an active Pro subscription.
+     */
+    public function isPro(): bool
+    {
+        return $this->plan()->isPro();
+    }
 
     /**
      * The attributes that are mass assignable.

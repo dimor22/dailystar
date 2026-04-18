@@ -5,6 +5,9 @@ namespace App\Livewire;
 use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\Task;
+use App\Enums\Plan;
+use App\Models\User;
+use App\Services\PlanGate;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -75,9 +78,23 @@ class TasksManager extends Component
             ]);
 
             if ($this->assignToAllKidsOnCreate) {
+                $user = User::find($this->parentId);
+                $isFreePlan = $user && app(PlanGate::class)->planFor($user) === Plan::Free;
+
                 $kids = Kid::query()->where('parent_id', $this->parentId)->get();
 
                 foreach ($kids as $kid) {
+                    // Skip kids that are already at the free-plan task limit.
+                    if ($isFreePlan) {
+                        $activeCount = KidTask::query()
+                            ->where('kid_id', $kid->id)
+                            ->where('active', true)
+                            ->count();
+
+                        if ($activeCount >= Plan::FREE_TASK_LIMIT) {
+                            continue;
+                        }
+                    }
                     $nextOrder = ((int) KidTask::query()->where('kid_id', $kid->id)->max('order')) + 1;
 
                     KidTask::query()->create([

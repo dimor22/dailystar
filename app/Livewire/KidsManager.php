@@ -8,6 +8,9 @@ use App\Models\KidTask;
 use App\Models\Streak;
 use App\Models\Task;
 use App\Models\TaskCompletion;
+use App\Models\User;
+use App\Services\PlanGate;
+use App\Enums\Plan;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -82,6 +85,16 @@ class KidsManager extends Component
     public function createKid(): void
     {
         if ($this->parentId <= 0) {
+            return;
+        }
+
+        $user = User::find($this->parentId);
+
+        if ($user && ! app(PlanGate::class)->canCreateKid($user)) {
+            $this->dispatch('show-upgrade-banner',
+                message: 'You have reached the ' . Plan::FREE_KID_LIMIT . '-kid limit on the Free plan. Upgrade to Pro for unlimited kids.');
+            $this->dispatch('toast', message: 'Upgrade to Pro to add more kids.', type: 'warning');
+
             return;
         }
 
@@ -189,6 +202,18 @@ class KidsManager extends Component
 
         $taskIds = $validated['assignedTaskIds'] ?? [];
         $taskDays = $this->sanitizeAssignedTaskDays($taskIds);
+
+        // Enforce per-kid task limit on the free plan.
+        $user = User::find($this->parentId);
+        if ($user && app(PlanGate::class)->planFor($user) === Plan::Free) {
+            if (count($taskIds) > Plan::FREE_TASK_LIMIT) {
+                $this->dispatch('show-upgrade-banner',
+                    message: 'Free plan allows up to ' . Plan::FREE_TASK_LIMIT . ' active tasks per kid. Upgrade to Pro for unlimited tasks.');
+                $this->dispatch('toast', message: 'Too many tasks assigned. Upgrade to Pro.', type: 'warning');
+
+                return;
+            }
+        }
 
         foreach ($taskIds as $taskId) {
             if (empty($taskDays[$taskId])) {

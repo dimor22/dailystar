@@ -9,5 +9,7 @@
         </form>
     </x-app-nav>
 
+    <livewire:upgrade-banner />
+
     <livewire:kids-manager />
 </x-layouts.app>
