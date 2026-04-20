@@ -40,7 +40,7 @@
                 >
                     Contact
                 </a>
-                <a href="{{ route('marketing.donate') }}" class="marketing-btn marketing-btn-accent">Donate</a>
+                <a href="{{ route('marketing.donate') }}" class="marketing-btn marketing-btn-accent">Support Us</a>
                 <a href="{{ route('parent.login') }}" class="marketing-btn marketing-btn-primary">Parent Login</a>
             </nav>
         </div>
@@ -65,7 +65,7 @@
                     <a href="{{ route('marketing.terms') }}" class="marketing-footer-link">Terms and Conditions</a>
                     <a href="{{ route('marketing.privacy') }}" class="marketing-footer-link">Privacy Policy</a>
                     <a href="{{ route('marketing.contact') }}" class="marketing-footer-link">Contact</a>
-                    <a href="{{ route('marketing.donate') }}" class="marketing-footer-link">Donation Page</a>
+                    <a href="{{ route('marketing.donate') }}" class="marketing-footer-link">Support Us</a>
                 </div>
             </div>
 
@@ -74,7 +74,7 @@
                 <div class="mt-2 flex flex-col gap-2">
                     <a href="{{ config('services.marketing.tiktok_url') }}" target="_blank" rel="noopener noreferrer" class="marketing-footer-link">TikTok</a>
                     <a href="{{ config('services.marketing.youtube_url') }}" target="_blank" rel="noopener noreferrer" class="marketing-footer-link">YouTube</a>
-                    <a href="{{ route('marketing.donate') }}" class="marketing-btn marketing-btn-accent inline-flex w-fit">Donate to DailyStars</a>
+                    <a href="{{ route('marketing.donate') }}" class="marketing-btn marketing-btn-accent inline-flex w-fit">Support DailyStars</a>
                 </div>
             </div>
         </div>

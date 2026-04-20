@@ -34,8 +34,8 @@ return [
     'marketing' => [
         'contact_email' => env('CONTACT_EMAIL', env('MAIL_FROM_ADDRESS', 'hello@dailystars.org')),
         'donation_url' => env('DONATION_URL', 'https://buymeacoffee.com/dailystarsapp'),
-        'tiktok_url' => env('TIKTOK_URL', 'https://www.tiktok.com/@dailystarsapp'),
-        'youtube_url' => env('YOUTUBE_URL', 'https://www.youtube.com/@dailystarsapp'),
+        'tiktok_url' => env('TIKTOK_URL', 'https://www.tiktok.com/@daily_stars_12'),
+        'youtube_url' => env('YOUTUBE_URL', 'https://www.youtube.com/@DailyStars-12'),
     ],
 
 ];

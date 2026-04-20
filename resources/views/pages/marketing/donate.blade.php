@@ -1,4 +1,4 @@
-<x-layouts.marketing title="Support DailyStars">
+<x-layouts.marketing title="Support Us">
     <section class="marketing-panel p-6 sm:p-10">
         <p class="marketing-eyebrow">Support the Mission</p>
         <h1 class="marketing-h2 mt-3">Help keep DailyStars affordable for homeschool families.</h1>
@@ -22,7 +22,7 @@
         </div>
 
         <div class="mt-7">
-            <a href="{{ config('services.marketing.donation_url') }}" target="_blank" rel="noopener noreferrer" class="marketing-btn marketing-btn-accent">Donate Now</a>
+            <a href="{{ config('services.marketing.donation_url') }}" target="_blank" rel="noopener noreferrer" class="marketing-btn marketing-btn-accent">Support Us</a>
         </div>
     </section>
 </x-layouts.marketing>
