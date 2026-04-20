@@ -37,6 +37,10 @@ class ParentAuthController extends Controller
             ])->onlyInput('email');
         }
 
+        if ($parent->status === 'pending') {
+            return redirect()->route('parent.pending');
+        }
+
         $request->session()->forget(['shared_kid_id', 'preselected_kid_id', 'kid_id']);
         $request->session()->put('parent_user_id', $parent->id);
         $request->session()->put('parent_timezone', $parent->timezone);

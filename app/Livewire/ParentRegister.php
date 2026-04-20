@@ -35,15 +35,13 @@ class ParentRegister extends Component
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'parent',
+            'status' => 'pending',
             'timezone' => $validated['timezone'],
         ]);
 
         app(ParentRewardsProvisioningService::class)->provisionDefaults($parent);
 
-        session(['parent_user_id' => $parent->id]);
-        session(['parent_timezone' => $parent->timezone]);
-
-        $this->redirectRoute('parent.dashboard', navigate: true);
+        $this->redirectRoute('parent.pending', navigate: true);
     }
 
     public function render()

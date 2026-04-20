@@ -22,6 +22,7 @@ Route::view('/students', 'pages.kid-login')->name('kid.login');
 
 Route::get('/parent/login', [ParentAuthController::class, 'showLogin'])->name('parent.login');
 Route::view('/parent/register', 'pages.parent-register')->name('parent.register');
+Route::view('/parent/pending', 'pages.pending-approval')->name('parent.pending');
 Route::post('/parent/login', [ParentAuthController::class, 'login'])->name('parent.login.submit');
 Route::post('/parent/logout', [ParentAuthController::class, 'logout'])->name('parent.logout');
 
