@@ -35,12 +35,6 @@
                     About
                 </a>
                 <a
-                    href="{{ route('marketing.pricing') }}"
-                    class="marketing-nav-link {{ request()->routeIs('marketing.pricing') ? 'bg-sky-200 text-slate-900 ring-1 ring-sky-300' : '' }}"
-                >
-                    Pricing
-                </a>
-                <a
                     href="{{ route('marketing.contact') }}"
                     class="marketing-nav-link {{ request()->routeIs('marketing.contact', 'marketing.contact.submit') ? 'bg-sky-200 text-slate-900 ring-1 ring-sky-300' : '' }}"
                 >

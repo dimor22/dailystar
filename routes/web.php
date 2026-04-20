@@ -14,7 +14,7 @@ Route::post('/contact', [MarketingController::class, 'submitContact'])->name('ma
 Route::get('/terms', [MarketingController::class, 'terms'])->name('marketing.terms');
 Route::get('/privacy', [MarketingController::class, 'privacy'])->name('marketing.privacy');
 Route::get('/donate', [MarketingController::class, 'donate'])->name('marketing.donate');
-Route::get('/pricing', [MarketingController::class, 'pricing'])->name('marketing.pricing');
+Route::redirect('/pricing', '/')->name('marketing.pricing');
 
 Route::get('/k/{publicId}', KidSharedLinkController::class)->name('kid.shared-login');
 
