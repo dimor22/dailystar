@@ -6,6 +6,7 @@ use App\Services\ParentRewardsProvisioningService;
 use App\Models\User;
 use DateTimeZone;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 class ParentRegister extends Component
@@ -40,6 +41,28 @@ class ParentRegister extends Component
         ]);
 
         app(ParentRewardsProvisioningService::class)->provisionDefaults($parent);
+
+        $adminEmail = config('services.marketing.contact_email');
+        $appName    = config('app.name');
+
+        try {
+            Mail::raw(
+                "New registration on {$appName}\n\n"
+                . "Name:  {$parent->name}\n"
+                . "Email: {$parent->email}\n"
+                . "Time:  {$parent->created_at->toDateTimeString()} UTC\n\n"
+                . "Go to the admin dashboard to approve or reject this user:\n"
+                . url('/admin'),
+                fn ($m) => $m
+                    ->to($adminEmail)
+                    ->subject("{$appName}: New registration — {$parent->name}")
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Registration notification email failed.', [
+                'error' => $e->getMessage(),
+                'user_id' => $parent->id,
+            ]);
+        }
 
         $this->redirectRoute('parent.pending', navigate: true);
     }
