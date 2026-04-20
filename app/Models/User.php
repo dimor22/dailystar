@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Plan;
+use App\Enums\Role;
 use App\Services\PlanGate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -60,7 +61,18 @@ class User extends Authenticatable
      */
     protected $casts = [
         'password' => 'hashed',
+        'role'     => Role::class,
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === Role::Admin;
+    }
+
+    public function isEarlyAdopter(): bool
+    {
+        return $this->role === Role::EarlyAdopter;
+    }
 
     public function kids()
     {

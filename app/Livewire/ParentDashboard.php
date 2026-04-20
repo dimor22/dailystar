@@ -57,7 +57,7 @@ class ParentDashboard extends Component
             ->all();
 
         $parent = User::query()
-            ->where('role', 'parent')
+            ->whereIn('role', ['parent', 'early_adopter', 'admin'])
             ->whereKey($this->parentId)
             ->first();
 
@@ -434,7 +434,7 @@ class ParentDashboard extends Component
         ]);
 
         $parent = User::query()
-            ->where('role', 'parent')
+            ->whereIn('role', ['parent', 'early_adopter', 'admin'])
             ->whereKey($this->parentId)
             ->first();
 

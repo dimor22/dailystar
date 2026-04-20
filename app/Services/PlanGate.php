@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\Plan;
+use App\Enums\Role;
 use App\Models\Kid;
 use App\Models\KidTask;
 use App\Models\User;
@@ -15,6 +16,12 @@ class PlanGate
      */
     public function planFor(User $user): Plan
     {
+        // Early adopters and admins get Pro access without a subscription.
+        $role = $user->role instanceof Role ? $user->role : Role::tryFrom((string) $user->role);
+        if ($role && $role->hasFreeProAccess()) {
+            return Plan::Pro;
+        }
+
         if ($user->subscribed('pro')) {
             return Plan::Pro;
         }

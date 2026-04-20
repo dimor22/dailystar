@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\KidSharedLinkController;
 use App\Http\Controllers\MarketingController;
@@ -39,4 +40,9 @@ Route::middleware('parent.auth')->group(function () {
 	Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('parent.billing.cancel');
 	Route::post('/billing/resume', [BillingController::class, 'resume'])->name('parent.billing.resume');
 	Route::post('/billing/portal', [BillingController::class, 'portal'])->name('parent.billing.portal');
+});
+
+// Admin
+Route::middleware(['parent.auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+	Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
 });

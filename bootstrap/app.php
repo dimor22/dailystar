@@ -1,5 +1,10 @@
 <?php
 
+// Suppress PHP 8.4 implicit-nullable deprecation warnings from vendor packages
+// that have not yet been updated (e.g. laravel/sanctum 3.x on Laravel 10).
+// Remove this line once sanctum is upgraded to v4+ alongside a Laravel 11 upgrade.
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application

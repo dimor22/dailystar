@@ -28,7 +28,7 @@ class ParentAuthController extends Controller
 
         $parent = User::query()
             ->where('email', $validated['email'])
-            ->where('role', 'parent')
+            ->whereIn('role', ['parent', 'early_adopter', 'admin'])
             ->first();
 
         if (! $parent || ! Hash::check($validated['password'], $parent->password)) {
