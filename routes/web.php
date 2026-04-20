@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\KidSharedLinkController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ParentAuthController;
@@ -14,6 +15,8 @@ Route::post('/contact', [MarketingController::class, 'submitContact'])->name('ma
 Route::get('/terms', [MarketingController::class, 'terms'])->name('marketing.terms');
 Route::get('/privacy', [MarketingController::class, 'privacy'])->name('marketing.privacy');
 Route::get('/donate', [MarketingController::class, 'donate'])->name('marketing.donate');
+Route::post('/donate/checkout', [DonationController::class, 'checkout'])->name('donation.checkout');
+Route::get('/donate/success', [DonationController::class, 'success'])->name('donation.success');
 Route::redirect('/pricing', '/')->name('marketing.pricing');
 
 Route::get('/k/{publicId}', KidSharedLinkController::class)->name('kid.shared-login');
