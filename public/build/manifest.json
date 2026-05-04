@@ -9,5 +9,14 @@
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/marketing.js": {
+    "file": "assets/marketing-DGuF58ax.js",
+    "name": "marketing",
+    "src": "resources/js/marketing.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
   }
 }
