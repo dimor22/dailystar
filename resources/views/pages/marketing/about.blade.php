@@ -1,12 +1,29 @@
 <x-layouts.marketing title="About DailyStars">
     <section class="marketing-panel p-6 sm:p-10">
         <p class="marketing-eyebrow">About the Builder</p>
+        {{-- hero image --}}
+        <figure class="relative mt-6 w-full overflow-hidden rounded-lg">
+            <img
+                src="{{ asset('images/marketing/about-hero.webp') }}"
+                alt="Photo of DailyStars founder by the lake with his family"
+                class="h-full w-full object-cover object-center"
+            >
+            <figcaption class="mt-2 text-center text-xs font-semibold text-slate-500">
+                Family picture at Lake Tahoe, CA.
+            </figcaption>
+        </figure>
         <h1 class="marketing-h2 mt-3">A parent-built tool for calmer homeschool days.</h1>
 
         <div class="mt-5 space-y-4 text-slate-700">
+            <p>Hi, I'm David! I'm a software engineer, homeschool dad of 4, and the builder of DailyStars.</p>
             <p>DailyStars started with one simple goal: make daily expectations clear, motivating, and kind for kids.</p>
             <p>I built this for families who want structure without turning home learning into constant reminders and friction. When kids can see what matters today, they feel ownership. When parents can see progress quickly, they coach with confidence.</p>
             <p>This project is still growing, and your feedback shapes what comes next. If you have ideas, challenges, or requests, I would love to hear from you.</p>
+        </div>
+
+        {{-- Link to contact --}}
+        <div class="mt-6">
+            <a href="{{ route('marketing.contact') }}" class="marketing-btn marketing-btn-outline">Contact Me</a>
         </div>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
